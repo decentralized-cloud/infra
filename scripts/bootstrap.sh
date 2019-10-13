@@ -54,7 +54,17 @@ install_kind()
 {
 	curl -Lo ./kind https://github.com/kubernetes-sigs/kind/releases/download/v0.5.1/kind-linux-amd64
 	chmod +x ./kind
-	sudo mv ./kind /usr/local/bin/kind
+	sudo mv ./kind /usr/local/bin/
+}
+
+install_helm()
+{
+	curl -Lo ./helm.tar.gz https://get.helm.sh/helm-v3.0.0-beta.4-linux-amd64.tar.gz
+	mkdir ./helm
+	tar -C ./helm -xzf helm.tar.gz
+	sudo mv ./helm/linux-amd64/helm /usr/local/bin/
+	rm -rf ./helm
+	rm -rf helm.tar.gz
 }
 
 ###
@@ -68,13 +78,14 @@ if [[ $? -ne 0 ]]; then
 fi
 
 # List of dependencies that are required to deploy a K8s cluster locally with KIND
-readonly dependencies="curl kubectl docker go kind"
+readonly dependencies="curl kubectl docker go kind helm"
 
 for dep in $dependencies; do
 	command -v $dep &>/dev/null
 	if [[ $? -ne 0 ]]; then
-		echo "$dep does not exist. Installing $dep"
+		echo "$dep does not exist. Installing $dep..."
 		install_$dep
+		echo "Finished installing $dep"
 	fi
 done
 

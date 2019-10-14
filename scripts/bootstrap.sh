@@ -38,6 +38,9 @@ install_docker()
 
 	# TODO Pin docker version
 	sudo apt-get install -y --allow-unauthenticated docker-ce docker-ce-cli containerd.io
+
+	# This enables non-root user to run docker without sudo
+	sudo usermod -aG docker $USER
 }
 
 install_go()

@@ -2,10 +2,8 @@
 
 install_curl()
 {
-	# install docker dependencies
-	sudo apt-get update -y && sudo apt-get install -y --allow-unauthenticated --no-install-recommends \
-	curl &&
-	apt-get clean
+	# install curl dependencies
+	sudo apt-get install -y --allow-unauthenticated --no-install-recommends curl
 }
 
 install_kubectl()
@@ -20,11 +18,10 @@ install_kubectl()
 install_docker()
 {
 	# install docker dependencies
-	sudo apt-get update -y && sudo apt-get install -y --allow-unauthenticated --no-install-recommends \
+	sudo apt-get install -y --allow-unauthenticated --no-install-recommends \
 	apt-transport-https \
 	ca-certificates \
-	software-properties-common &&
-	apt-get clean
+	software-properties-common
 
 	# Install docker
 	curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
@@ -80,6 +77,8 @@ if [[ $? -ne 0 ]]; then
 	echo "This bootstrap was made for Ubuntu machines only. Please manually install the dependencies."
 fi
 
+sudo apt-get update -y
+
 # List of dependencies that are required to deploy a K8s cluster locally with KIND
 readonly dependencies="curl kubectl docker go kind helm"
 
@@ -92,4 +91,5 @@ for dep in $dependencies; do
 	fi
 done
 
+sudo apt-get clean
 

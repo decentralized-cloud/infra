@@ -67,6 +67,11 @@ install_helm()
 	sudo mv ./helm/linux-amd64/helm /usr/local/bin/
 	rm -rf ./helm
 	rm -rf helm.tar.gz
+
+	# Add helm stable repo and decentralized-cloud repo
+	helm repo add stable https://kubernetes-charts.storage.googleapis.com/
+	helm repo add decentralized-cloud https://decentralized-cloud.github.io/helm
+	helm repo update
 }
 
 ###

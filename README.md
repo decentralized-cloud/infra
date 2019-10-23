@@ -18,7 +18,7 @@ These dependencies can be installed by running the following command
 
 ### Creation and Deployment of local K8s cluster
 
-Once you run the bootstrap or have acquired all the infrastructure dependencies, you can run the following command to deploy a 3 master 3 slave K8s cluster using the default config provided.
+Once you run the bootstrap or have acquired all the infrastructure dependencies, you can run the following commands to deploy a 3 master 3 slave K8s cluster using the default config provided.
 
     # Create a cluster named "kind" (by default) using our kind cluster configuration
     kind create cluster --config ./config/default_kind_config.yaml
@@ -32,3 +32,10 @@ Once you run the bootstrap or have acquired all the infrastructure dependencies,
     # Done? Tear down cluster
     kind delete cluster
 
+Alternatively, you can use our helper script to deploy a cluster by using the commands below:
+
+    # Define KIND_CONFIG environment variable to specify your own config
+    # e.g. $ export KIND_CONFIG="/path/to/config/kind_config.yaml"
+    ./script/edge-cloud start # Creates a cluster using default config unless KIND_CONFIG is defined
+
+    ./script/edge-cloud stop # To tear down the cluster

@@ -74,9 +74,9 @@ install_helm()
 	helm repo update
 }
 
-###
-# Script Main (POSIX COMPLIANT)
-###
+################
+# Script Main #
+##############
 
 # Ensure that this bootstrap is running on an Ubuntu machine
 cat /etc/os-release | grep -i ubuntu

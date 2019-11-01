@@ -42,14 +42,14 @@ Alternatively, you can use our helper script to deploy a cluster by using the co
 
 ### Using Private Docker Images (not from Docker Hub)
 
-When developing with a K8s cluster via Kind (i.e. K8s inside docker), docker images must be loaded inside the container.
-Images can be pulled from DockerHub however, if you are developing your own image that has not been uploaded to DockerHub must be loaded in. This can be achieved using the `kind load` command. Examples are shown below.
+When developing with a K8s cluster via Kind (i.e. K8s inside docker), the cluster is isolated from the host environment and as a result, does not have access to the images that are on the host.
+Images can be pulled from DockerHub however, if you are developing your own image that has not been uploaded to DockerHub, images must be loaded in. This can be achieved using the `kind load` command. Examples are shown below.
 
     docker save -o my_image_version.tar my_image:version
     kind load image-archive my_image_version.tar
 
 Or alternatively, load a local image directly
 
-    kind load docker-image my_image:version
+    kind load docker-image my_image:version # There has been issues running this command, please use the above method if this does not work.
 
 *NB: Please make sure that the imagePullPolicy is either set to `IfNotPresent` or `Never` to ensure that the image is pulled locally.*

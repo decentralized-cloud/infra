@@ -4,7 +4,12 @@ DEFAULT_CONFIG="$(cd "$(dirname "$0")"; pwd -P)"/../config/default_kind_config.y
 KIND_CONFIG="${KIND_CONFIG:-"$DEFAULT_CONFIG"}"
 
 function print_help() {
-	echo "Usage: ./$1 <start|stop>"
+	echo -e "Usage: $1 [command]\n"
+    echo "Available Commands:"
+    echo -e "\tstart \t\t\t\t\tStart Kind K8s cluster"
+    echo -e "\tstop \t\t\t\t\tStop Kind K8s cluster"
+    echo -e "\tdeploy_services <--config config_path>\tDeploy all edge services"
+    echo -e "\tremove_services \t\t\tRemove all edge services"
 }
 
 function start() {
@@ -12,15 +17,68 @@ function start() {
 	export KUBECONFIG="$(kind get kubeconfig-path --name="kind")"
 
 	# Deploy mongodb
-	helm install mongo stable/mongodb
+	helm install mongo stable/mongodb --set volumePermissions.enabled=true
+	kubectl create namespace edge
 }
 
 function stop() {
-	helm delete mongo
 	kind delete cluster
 }
 
+readonly EDGE_SERVICES="tenant api-gateway edge-cluster frontend"
+
+# TODO Clean up script
+function deploy_services() {
+    while test $# -gt 0; do
+        case "$1" in
+            -h|--help)
+                print_help
+                exit 0
+                ;;
+            --config)
+                shift
+                if test $# -gt 0; then
+                    echo "$1"
+                    if [[ -f "$1" ]]; then
+                        helm repo update
+                        for service in $EDGE_SERVICES; do
+                            VERSION="$(cat "$1" | jq -r '."'"$service"'"')"
+                            echo -e "\nInstalling helm chart for $service version $VERSION\n"
+                            helm install "$service" decentralized-cloud/"$service" --version $VERSION -n edge
+                        done
+                        exit 0
+                    else
+                        echo "Config file does not exist."
+                        exit 1
+                    fi
+                    break
+                else
+                    echo "Missing argument. Please specify path to service config file."
+                    exit 1
+                fi
+                ;;
+            *)
+                echo "Invalid argument."
+                print_help
+                exit 1
+        esac
+    done
+
+    helm repo update
+    for service in $EDGE_SERVICES; do
+        echo -e "\nInstalling helm chart for $service latest version\n"
+        helm install "$service" decentralized-cloud/"$service" --namespace edge
+    done
+}
+
+function remove_services() {
+    for service in $EDGE_SERVICES; do
+        helm uninstall "$service" --namespace edge
+    done
+}
+
 case $1 in
-	start|stop) "$1" ;;
+	start|stop|remove_services) "$1" ;;
+    deploy_services) "$1" "${@:2}" ;;
 	*) print_help "$0" ;;
 esac

@@ -16,7 +16,7 @@ These dependencies can be installed by running the following command
 
 \*NB: This bootstrap has been tailored for Ubuntu machines only. Bootstrap will fail if run on non-Ubuntu machines.
 
-### Creation and Deployment of local K8s cluster
+### Creation and Deployment of Local K8s Cluster
 
 Once you run the bootstrap or have acquired all the infrastructure dependencies, you can run the following commands to deploy a 3 master 3 slave K8s cluster using the default config provided.
 
@@ -39,6 +39,15 @@ Alternatively, you can use our helper script to deploy a cluster by using the co
     ./script/edge-cloud start # Creates a cluster using default config unless KIND_CONFIG is defined
 
     ./script/edge-cloud stop # To tear down the cluster
+
+### Deploying Decentralized Edge Services
+
+There are currently two ways to deploy Edge services; first deploying with no config, which will pull the latest version of each service's helm chart, second with a config which specifies the version for each service. This can be done running the following commands:
+
+    ./script/edge-cloud deploy_services # Deploy latest version for all services 
+    ./script/edge-cloud deploy_services --config ./config/edge_services.json # Modify services with pinned version specified in edge_services.json
+
+    ./script/edge-cloud remove_services # To remove all services from cluster and Helm
 
 ### Using Private Docker Images (not from Docker Hub)
 

@@ -84,7 +84,7 @@ if [[ $? -ne 0 ]]; then
 	echo "This bootstrap was made for Ubuntu machines only. Please manually install the dependencies."
 fi
 
-sudo apt-get update -y
+sudo apt-get update -y && apt-get install jq -y
 
 # List of dependencies that are required to deploy a K8s cluster locally with KIND
 readonly dependencies="curl kubectl docker go kind helm"

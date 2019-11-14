@@ -17,8 +17,8 @@ function start() {
 	export KUBECONFIG="$(kind get kubeconfig-path --name="kind")"
 
 	# Deploy mongodb
-	helm install mongo stable/mongodb --set volumePermissions.enabled=true
 	kubectl create namespace edge
+	helm install mongodb stable/mongodb --set volumePermissions.enabled=true -n edge --set usePassword=false
 }
 
 function stop() {

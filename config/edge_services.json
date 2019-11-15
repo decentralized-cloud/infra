@@ -1,5 +1,5 @@
 {
-    "edge-cluster": "0.0.1",
+    "edge-cluster": "0.0.2",
     "tenant": "0.0.2",
     "frontend": "0.0.1",
     "api-gateway": "0.0.1"

@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 DEFAULT_CONFIG="$(cd "$(dirname "$0")"; pwd -P)"/../config/default_kind_config.yaml
+DEFAULT_METALLB_CONFIG="$(cd "$(dirname "$0")"; pwd -P)"/../config/default_metallb_config.yaml
 KIND_CONFIG="${KIND_CONFIG:-"$DEFAULT_CONFIG"}"
 
 function print_help() {
@@ -19,6 +20,8 @@ function start() {
 	# Deploy mongodb
 	kubectl create namespace edge
 	helm install mongodb stable/mongodb --set volumePermissions.enabled=true -n edge --set usePassword=false
+	kubectl apply -f https://raw.githubusercontent.com/google/metallb/v0.8.3/manifests/metallb.yaml
+	kubectl apply -f $DEFAULT_METALLB_CONFIG
 }
 
 function stop() {

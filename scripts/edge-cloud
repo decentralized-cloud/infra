@@ -15,7 +15,6 @@ function print_help() {
 
 function start() {
 	kind create cluster --config "$KIND_CONFIG" --wait 5m # Block until control plane is ready
-	export KUBECONFIG="$(kind get kubeconfig-path --name="kind")"
 
 	# Deploy mongodb
 	kubectl create namespace edge

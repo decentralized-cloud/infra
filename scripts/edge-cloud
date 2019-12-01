@@ -19,9 +19,16 @@ function start() {
 
 	# Deploy mongodb
 	kubectl create namespace edge
+
+	# installing mongodb
 	helm install mongodb stable/mongodb --set volumePermissions.enabled=true -n edge --set usePassword=false
+
+	#installing metallb
 	kubectl apply -f https://raw.githubusercontent.com/google/metallb/v0.8.3/manifests/metallb.yaml
 	kubectl apply -f "$DEFAULT_METALLB_CONFIG"
+
+	# installing istio
+	istioctl manifest apply --set values.global.mtls.enabled=true --set values.global.controlPlaneSecurityEnabled=true
 }
 
 function stop() {
@@ -33,7 +40,7 @@ readonly EDGE_SERVICES="tenant api-gateway edge-cluster"
 # TODO Clean up script
 function deploy_services() {
     helm repo update
-    
+
     while test $# -gt 0; do
         case "$1" in
             -h|--help)

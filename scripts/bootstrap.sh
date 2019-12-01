@@ -38,7 +38,7 @@ install_docker()
 
 	# This enables non-root user to run docker without sudo
 	sudo groupadd docker || true # Ensure that docker group is created
-	sudo usermod -aG docker $USER
+	sudo usermod -aG docker "$USER"
 	sudo chmod 666 /var/run/docker.sock
 }
 
@@ -67,10 +67,30 @@ install_helm()
 	sudo mv ./helm/linux-amd64/helm /usr/local/bin/
 	rm -rf ./helm
 	rm -rf helm.tar.gz
+}
 
+install_istioctl()
+{
+	curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.4.0  sh -
+	sudo mv istio-1.4.0/bin/istioctl /usr/local/bin/
+	rm -rf istio-1.4.0
+}
+
+add_helm_repos()
+{
 	# Add helm stable repo and decentralized-cloud repo
 	helm repo add stable https://kubernetes-charts.storage.googleapis.com/
 	helm repo add decentralized-cloud https://decentralized-cloud.github.io/helm
+
+	# istio repo
+	helm repo add istio.io https://storage.googleapis.com/istio-release/releases/1.4.0/charts/
+
+	# cert-manager repo
+	helm repo add jetstack https://charts.jetstack.io
+
+	# ory repo
+	helm repo add ory https://k8s.ory.sh/helm/charts
+
 	helm repo update
 }
 
@@ -79,24 +99,25 @@ install_helm()
 ##############
 
 # Ensure that this bootstrap is running on an Ubuntu machine
-cat /etc/os-release | grep -i ubuntu
-if [[ $? -ne 0 ]]; then
+if ! grep -i ubuntu < /etc/os-release; then
 	echo "This bootstrap was made for Ubuntu machines only. Please manually install the dependencies."
+	exit 1
 fi
 
 sudo apt-get update -y && sudo apt-get install jq -y
 
 # List of dependencies that are required to deploy a K8s cluster locally with KIND
-readonly dependencies="curl kubectl docker go kind helm"
+readonly dependencies="curl kubectl docker go kind helm istioctl"
 
 for dep in $dependencies; do
-	command -v $dep &>/dev/null
-	if [[ $? -ne 0 ]]; then
+	if ! command -v "$dep" &>/dev/null; then
 		echo "$dep does not exist. Installing $dep..."
-		install_$dep
+		install_"$dep"
 		echo "Finished installing $dep"
 	fi
 done
+
+add_helm_repos
 
 sudo apt-get clean
 

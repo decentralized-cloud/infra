@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 
-DEFAULT_CONFIG="$(cd "$(dirname "$0")"; pwd -P)"/../config/default_kind_config.yaml
-DEFAULT_METALLB_CONFIG="$(cd "$(dirname "$0")"; pwd -P)"/../config/default_metallb_config.yaml
-DEFAULT_SERVICES_CONFIG="$(cd "$(dirname "$0")"; pwd -P)"/../config/edge_services.json
+CONFIG_PATH="$(cd "$(dirname "$0")"; pwd -P)"/../config/
+DEFAULT_CONFIG="$CONFIG_PATH"/default_kind_config.yaml
+DEFAULT_METALLB_CONFIG="$CONFIG_PATH"/default_metallb_config.yaml
+DEFAULT_SERVICES_CONFIG="$CONFIG_PATH"/edge_services.json
+KIALI_SECRET_CONFIG="$CONFIG_PATH"/kiali-secret.yaml
 KIND_CONFIG="${KIND_CONFIG:-"$DEFAULT_CONFIG"}"
 
 function print_help() {
@@ -16,19 +18,23 @@ function print_help() {
 
 function start() {
 	kind create cluster --config "$KIND_CONFIG" --wait 5m # Block until control plane is ready
-
-	# Deploy mongodb
 	kubectl create namespace edge
 
-	# installing mongodb
+	# deploying mongodb
 	helm install mongodb stable/mongodb --set volumePermissions.enabled=true -n edge --set usePassword=false
 
-	#installing metallb
+	# deploying metallb
 	kubectl apply -f https://raw.githubusercontent.com/google/metallb/v0.8.3/manifests/metallb.yaml
 	kubectl apply -f "$DEFAULT_METALLB_CONFIG"
 
-	# installing istio
-	istioctl manifest apply --set values.global.mtls.enabled=true --set values.global.controlPlaneSecurityEnabled=true
+	# deploying istio
+	istioctl manifest apply \
+		--set values.global.mtls.enabled=true \
+		--set values.global.controlPlaneSecurityEnabled=true \
+		--set values.kiali.enabled=true
+	kubectl apply -f "$KIALI_SECRET_CONFIG"
+
+	echo "Enter 'istioctl dashboard kiali' to access kiali dashboard"
 }
 
 function stop() {

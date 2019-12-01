@@ -11,7 +11,7 @@ To deploy a K8s cluster locally, we require the following dependencies to be ins
 - kubectl (administrative tool)
 
 These dependencies can be installed by running the following command
-    
+
     sudo ./script/bootstrap.sh
 
 \*NB: This bootstrap has been tailored for Ubuntu machines only. Bootstrap will fail if run on non-Ubuntu machines.
@@ -36,18 +36,18 @@ Alternatively, you can use our helper script to deploy a cluster by using the co
 
     # Define KIND_CONFIG environment variable to specify your own config
     # e.g. $ export KIND_CONFIG="/path/to/config/kind_config.yaml"
-    ./script/edge-cloud start # Creates a cluster using default config unless KIND_CONFIG is defined
+    ./script/edge-cloud.sh start # Creates a cluster using default config unless KIND_CONFIG is defined
 
-    ./script/edge-cloud stop # To tear down the cluster
+    ./script/edge-cloud.sh stop # To tear down the cluster
 
 ### Deploying Decentralized Edge Services
 
 There are currently two ways to deploy Edge services; first deploying with no config, which will pull the latest version of each service's helm chart, second with a config which specifies the version for each service. This can be done running the following commands:
 
-    ./script/edge-cloud deploy_services # Deploy latest version for all services 
-    ./script/edge-cloud deploy_services --config ./config/edge_services.json # Modify services with pinned version specified in edge_services.json
+    ./script/edge-cloud.sh deploy_services # Deploy latest version for all services
+    ./script/edge-cloud.sh deploy_services --config ./config/edge_services.json # Modify services with pinned version specified in edge_services.json
 
-    ./script/edge-cloud remove_services # To remove all services from cluster and Helm
+    ./script/edge-cloud.sh remove_services # To remove all services from cluster and Helm
 
 ### Using Private Docker Images (not from Docker Hub)
 

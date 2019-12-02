@@ -4,7 +4,9 @@ CONFIG_PATH="$(cd "$(dirname "$0")"; pwd -P)"/../config/
 DEFAULT_CONFIG="$CONFIG_PATH"/default_kind_config.yaml
 DEFAULT_METALLB_CONFIG="$CONFIG_PATH"/default_metallb_config.yaml
 DEFAULT_SERVICES_CONFIG="$CONFIG_PATH"/edge_services.json
-KIALI_SECRET_CONFIG="$CONFIG_PATH"/kiali-secret.yaml
+ISTIO_KIALI_SECRET_CONFIG="$CONFIG_PATH"/istio/kiali_secret.yaml
+ISTIO_GATEWAY_CONFIG="$CONFIG_PATH"/istio/gateway.yaml
+ISTIO_VIRTUALSERVICE_CONFIG="$CONFIG_PATH"/istio/virtualservice.yaml
 KIND_CONFIG="${KIND_CONFIG:-"$DEFAULT_CONFIG"}"
 
 function print_help() {
@@ -23,9 +25,6 @@ function start() {
 	# labeling the edge namespace to enable automatic istio sidecar injection
 	kubectl label namespace edge istio-injection=enabled
 
-	# deploying mongodb
-	helm install mongodb stable/mongodb --set volumePermissions.enabled=true -n edge --set usePassword=false
-
 	# deploying metallb
 	kubectl apply -f https://raw.githubusercontent.com/google/metallb/v0.8.3/manifests/metallb.yaml
 	kubectl apply -f "$DEFAULT_METALLB_CONFIG"
@@ -36,9 +35,21 @@ function start() {
 		--set values.global.controlPlaneSecurityEnabled=true \
 		--set values.kiali.enabled=true \
         	--set values.sidecarInjectorWebhook.rewriteAppHTTPProbe=true
-	kubectl apply -f "$KIALI_SECRET_CONFIG"
+	kubectl apply -f "$ISTIO_KIALI_SECRET_CONFIG"
 
 	echo "Enter 'istioctl dashboard kiali' to access kiali dashboard"
+
+	# deploying mongodb, make sure you deploy after istio deployment is done, so it inject sidecar for mongodb
+	helm install mongodb stable/mongodb --set volumePermissions.enabled=true -n edge --set usePassword=false
+
+	# applying istio ingress related config
+	kubectl -n edge apply -f <(istioctl kube-inject -f "$ISTIO_GATEWAY_CONFIG")
+	kubectl -n edge apply -f <(istioctl kube-inject -f "$ISTIO_VIRTUALSERVICE_CONFIG")
+
+	echo "You need to make sure edge-cloud.com is added to your /etc/hosts file locally"
+	echo "If you are using kind, you most likely got 172.17.255.1 as its IP address"
+	echo "Add following line to your /etc/hosts file:"
+	echo "172.17.255.1 edge-cloud.com"
 }
 
 function stop() {
@@ -108,18 +119,10 @@ function deploy_a_service() {
 }
 
 function deploy_frontend_service() {
-    api_gateway_external_ip_address=""
-    while [ -z "$api_gateway_external_ip_address" ]; do
-        echo "Waiting for API Gateway external IP address to be assigned..."
-        api_gateway_external_ip_address=$(kubectl get svc --namespace edge api-gateway --template "{{ range (index .status.loadBalancer.ingress 0) }}{{.}}{{ end }}")
-        [ -z "$api_gateway_external_ip_address" ] && sleep 1
-    done
-    echo "API gateway External IP: $api_gateway_external_ip_address"
-
     helm_chart_version="$(jq -r '."'"frontend"'".helm_chart_version' < "$1")"
     app_version="$(jq -r '."'"frontend"'".app_version' < "$1")"
     echo -e "\nInstalling helm chart for frontend helm_chart_version=$helm_chart_version app_version=$app_version\n"
-    helm install "frontend" decentralized-cloud/"frontend" -n edge --version "$helm_chart_version" --set app-version="$app_version" --set pod.apiGateway.url="http://$api_gateway_external_ip_address/graphql"
+    helm install "frontend" decentralized-cloud/"frontend" -n edge --version "$helm_chart_version" --set app-version="$app_version" --set pod.apiGateway.url="http://edge-cloud.com/api/graphql"
 }
 
 case $1 in

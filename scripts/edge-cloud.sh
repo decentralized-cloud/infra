@@ -31,10 +31,11 @@ function start() {
 
 	# deploying istio
 	istioctl manifest apply \
-		--set values.global.mtls.enabled=true \
-		--set values.global.controlPlaneSecurityEnabled=true \
-		--set values.kiali.enabled=true \
-        	--set values.sidecarInjectorWebhook.rewriteAppHTTPProbe=true
+            --set values.global.mtls.enabled=true \
+            --set values.global.controlPlaneSecurityEnabled=true \
+            --set values.kiali.enabled=true \
+            --set values.certmanager.enabled=true \
+            --set values.sidecarInjectorWebhook.rewriteAppHTTPProbe=true
 	kubectl apply -f "$ISTIO_KIALI_SECRET_CONFIG"
 
 	echo "Enter 'istioctl dashboard kiali' to access kiali dashboard"

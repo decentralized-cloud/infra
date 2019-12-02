@@ -20,6 +20,9 @@ function start() {
 	kind create cluster --config "$KIND_CONFIG" --wait 5m # Block until control plane is ready
 	kubectl create namespace edge
 
+	# labeling the edge namespace to enable automatic istio sidecar injection
+	kubectl label namespace edge istio-injection=enabled
+
 	# deploying mongodb
 	helm install mongodb stable/mongodb --set volumePermissions.enabled=true -n edge --set usePassword=false
 
@@ -31,7 +34,8 @@ function start() {
 	istioctl manifest apply \
 		--set values.global.mtls.enabled=true \
 		--set values.global.controlPlaneSecurityEnabled=true \
-		--set values.kiali.enabled=true
+		--set values.kiali.enabled=true \
+        	--set values.sidecarInjectorWebhook.rewriteAppHTTPProbe=true
 	kubectl apply -f "$KIALI_SECRET_CONFIG"
 
 	echo "Enter 'istioctl dashboard kiali' to access kiali dashboard"

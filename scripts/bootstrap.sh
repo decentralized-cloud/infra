@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+set -e
+
+current_directory=$(dirname "$0")
+cd "$current_directory"/..
+
 install_curl()
 {
 	# install curl dependencies
@@ -44,7 +49,7 @@ install_docker()
 
 install_go()
 {
-	curl -Lo go.tar.gz https://dl.google.com/go/go1.13.1.linux-amd64.tar.gz
+	curl -Lo go.tar.gz https://dl.google.com/go/go1.13.5.linux-amd64.tar.gz
 	tar -C /usr/local -xzf go.tar.gz
 	rm go.tar.gz
 
@@ -119,4 +124,3 @@ done
 add_helm_repos
 
 apt-get clean
-

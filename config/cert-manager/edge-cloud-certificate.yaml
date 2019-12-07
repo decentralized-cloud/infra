@@ -1,0 +1,14 @@
+--- 
+  apiVersion: cert-manager.io/v1alpha2
+  kind: Certificate
+  metadata: 
+    name: edge-cloud-com
+  spec: 
+    commonName: edge-cloud.com
+    dnsNames: 
+      - edge-cloud.com
+    issuerRef: 
+      kind: ClusterIssuer
+      name: ca-cluster-issuer
+    secretName: edge-cloud-com
+  

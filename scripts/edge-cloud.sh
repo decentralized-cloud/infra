@@ -1,13 +1,25 @@
 #!/usr/bin/env bash
 
-CONFIG_PATH="$(cd "$(dirname "$0")"; pwd -P)"/../config/
-DEFAULT_CONFIG="$CONFIG_PATH"/default_kind_config.yaml
-DEFAULT_METALLB_CONFIG="$CONFIG_PATH"/default_metallb_config.yaml
-DEFAULT_SERVICES_CONFIG="$CONFIG_PATH"/edge_services.json
-ISTIO_KIALI_SECRET_CONFIG="$CONFIG_PATH"/istio/kiali_secret.yaml
-ISTIO_GATEWAY_CONFIG="$CONFIG_PATH"/istio/gateway.yaml
-ISTIO_VIRTUALSERVICE_CONFIG="$CONFIG_PATH"/istio/virtualservice.yaml
+set -e
+
+current_directory=$(dirname "$0")
+cd "$current_directory"/..
+
+DEFAULT_CONFIG=./config/default_kind_config.yaml
 KIND_CONFIG="${KIND_CONFIG:-"$DEFAULT_CONFIG"}"
+
+DEFAULT_METALLB_CONFIG=./config/default_metallb_config.yaml
+
+KEYPAIR_FILE_PATH=./certificates/ca.key
+CERTIFICATE_FILE_PATH=./certificates/ca.crt
+CERT_MANAGER_SELF_SIGNING_CLUSTER_ISSUER_CONFIG=./config/cert-manager/self-signing-clusterissuer.yaml
+CERT_MANAGER_EDGE_CLOUD_CERTIFICATE_CONFIG=./config/cert-manager/edge-cloud-certificate.yaml
+
+ISTIO_KIALI_SECRET_CONFIG=./config/istio/kiali_secret.yaml
+ISTIO_GATEWAY_CONFIG=./config/istio/gateway.yaml
+ISTIO_VIRTUALSERVICE_CONFIG=./config/istio/virtualservice.yaml
+
+DEFAULT_SERVICES_CONFIG=./config/edge_services.json
 
 function print_help() {
 	echo -e "Usage: $1 [command]\n"
@@ -20,30 +32,51 @@ function print_help() {
 
 function start() {
 	kind create cluster --config "$KIND_CONFIG" --wait 5m # Block until control plane is ready
-	kubectl create namespace edge
-
-	# labeling the edge namespace to enable automatic istio sidecar injection
-	kubectl label namespace edge istio-injection=enabled
 
 	# deploying metallb
 	kubectl apply -f https://raw.githubusercontent.com/google/metallb/v0.8.3/manifests/metallb.yaml
 	kubectl apply -f "$DEFAULT_METALLB_CONFIG"
 
+	# installing cert-manager
+	kubectl apply -f https://raw.githubusercontent.com/jetstack/cert-manager/release-0.12/deploy/manifests/00-crds.yaml
+	kubectl create namespace cert-manager
+	helm install cert-manager \
+		jetstack/cert-manager  \
+		--version v0.12.0 \
+		-n cert-manager \
+		--wait
+	kubectl create secret tls ca-key-pair --key="$KEYPAIR_FILE_PATH" --cert="$CERTIFICATE_FILE_PATH" -n cert-manager
+	kubectl apply -n cert-manager -f "$CERT_MANAGER_SELF_SIGNING_CLUSTER_ISSUER_CONFIG"
+
+    # configuring edge namespace requirements
+	kubectl create namespace edge
+	kubectl label namespace edge istio-injection=enabled # labeling the edge namespace to enable automatic istio sidecar injection
+
 	# deploying istio
 	istioctl manifest apply \
             --set values.global.mtls.enabled=true \
             --set values.global.controlPlaneSecurityEnabled=true \
+            --set values.gateways.istio-ingressgateway.enabled=true \
+            --set values.gateways.istio-ingressgateway.sds.enabled=true \
+            --set values.gateways.istio-egressgateway.enabled=true \
             --set values.kiali.enabled=true \
-            --set values.certmanager.enabled=true \
+            --set values.global.proxy.accessLogFile="/dev/stdout" \
             --set values.sidecarInjectorWebhook.rewriteAppHTTPProbe=true
-	kubectl apply -f "$ISTIO_KIALI_SECRET_CONFIG"
 
+	# installing Kiali dashboard
+	kubectl apply -f "$ISTIO_KIALI_SECRET_CONFIG"
 	echo "Enter 'istioctl dashboard kiali' to access kiali dashboard"
 
 	# deploying mongodb, make sure you deploy after istio deployment is done, so it inject sidecar for mongodb
-	helm install mongodb stable/mongodb --set volumePermissions.enabled=true -n edge --set usePassword=false
+	helm install mongodb \
+        stable/mongodb \
+        --set volumePermissions.enabled=true \
+        --set usePassword=false \
+        -n edge \
+        --wait
 
 	# applying istio ingress related config
+	kubectl apply -n istio-system -f "$CERT_MANAGER_EDGE_CLOUD_CERTIFICATE_CONFIG"
 	kubectl -n edge apply -f <(istioctl kube-inject -f "$ISTIO_GATEWAY_CONFIG")
 	kubectl -n edge apply -f <(istioctl kube-inject -f "$ISTIO_VIRTUALSERVICE_CONFIG")
 
@@ -116,14 +149,14 @@ function deploy_a_service() {
     helm_chart_version="$(jq -r '."'"$2"'".helm_chart_version' < "$1")"
     app_version="$(jq -r '."'"$2"'".app_version' < "$1")"
     echo -e "\nInstalling helm chart for $2 helm_chart_version=$helm_chart_version app_version=$app_version\n"
-    helm install "$2" decentralized-cloud/"$2" -n edge --version "$helm_chart_version" --set app-version="$app_version"
+    helm install "$2" decentralized-cloud/"$2" -n edge --version "$helm_chart_version" --set app-version="$app_version" --wait
 }
 
 function deploy_frontend_service() {
     helm_chart_version="$(jq -r '."'"frontend"'".helm_chart_version' < "$1")"
     app_version="$(jq -r '."'"frontend"'".app_version' < "$1")"
     echo -e "\nInstalling helm chart for frontend helm_chart_version=$helm_chart_version app_version=$app_version\n"
-    helm install "frontend" decentralized-cloud/"frontend" -n edge --version "$helm_chart_version" --set app-version="$app_version" --set pod.apiGateway.url="http://edge-cloud.com/api/graphql"
+    helm install "frontend" decentralized-cloud/"frontend" -n edge --version "$helm_chart_version" --set app-version="$app_version" --set pod.apiGateway.url="https://edge-cloud.com/api/graphql"  --wait
 }
 
 case $1 in

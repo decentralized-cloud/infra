@@ -58,7 +58,7 @@ install_go()
 
 install_kind()
 {
-	curl -Lo ./kind https://github.com/kubernetes-sigs/kind/releases/download/v0.6.0/kind-linux-amd64
+	curl -Lo ./kind https://github.com/kubernetes-sigs/kind/releases/download/v0.6.1/kind-linux-amd64
 	chmod +x ./kind
 	mv ./kind /usr/local/bin/
 }

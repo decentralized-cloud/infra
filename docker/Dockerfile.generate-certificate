@@ -1,0 +1,8 @@
+FROM depop/openssl-bats:1.0.1t-r0
+LABEL maintainer="morteza.alizadeh@gmail.com"
+
+ADD . /src
+WORKDIR /src/
+
+RUN openssl genrsa -out certificates/ca.key 4096
+RUN openssl req -x509 -new -nodes -key certificates/ca.key -sha256 -subj "/CN=micro-business.co.nz" -days 1024 -out certificates/ca.crt -extensions v3_ca -config ./config/openssl-wth-ca.cnf

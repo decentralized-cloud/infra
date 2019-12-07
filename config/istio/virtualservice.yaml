@@ -1,26 +1,34 @@
-apiVersion: networking.istio.io/v1alpha3
-kind: VirtualService
-metadata:
-  name: edge-cloud
-spec:
-  hosts:
-  - "edge-cloud.com"
-  gateways:
-  - edge-cloud-gateway
-  http:
-  - match:
-    - uri:
-        prefix: /api/
-    route:
-    - destination:
-        port:
-          number: 80
-        host: api-gateway.edge.svc.cluster.local
-  - match:
-    - uri:
-        prefix: /
-    route:
-    - destination:
-        port:
-          number: 80
-        host: frontend.edge.svc.cluster.local
+--- 
+  apiVersion: networking.istio.io/v1alpha3
+  kind: VirtualService
+  metadata: 
+    name: edge-cloud
+  spec: 
+    gateways: 
+      - edge-cloud-gateway
+    hosts: 
+      - edge-cloud.com
+    http: 
+      - 
+        match: 
+          - 
+            uri: 
+              prefix: /api/
+        route: 
+          - 
+            destination: 
+              host: api-gateway.edge.svc.cluster.local
+              port: 
+                number: 80
+      - 
+        match: 
+          - 
+            uri: 
+              prefix: /
+        route: 
+          - 
+            destination: 
+              host: frontend.edge.svc.cluster.local
+              port: 
+                number: 80
+  

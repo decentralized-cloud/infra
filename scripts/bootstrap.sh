@@ -50,10 +50,11 @@ install_docker()
 install_go()
 {
 	curl -Lo go.tar.gz https://dl.google.com/go/go1.13.5.linux-amd64.tar.gz
+	rm -rf /usr/local/go
 	tar -C /usr/local -xzf go.tar.gz
 	rm go.tar.gz
 
-	echo "Make sure you add /usr/local/go to your $PATH and set your $GOPATH environment variable correctly"
+	echo "Make sure you add /usr/local/go to your PATH and set your GOPATH environment variable correctly"
 }
 
 install_kind()

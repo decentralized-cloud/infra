@@ -54,8 +54,6 @@ function start() {
 
 	# deploying istio
 	istioctl manifest apply \
-            --set values.global.mtls.enabled=true \
-            --set values.global.controlPlaneSecurityEnabled=true \
             --set values.gateways.istio-ingressgateway.enabled=true \
             --set values.gateways.istio-ingressgateway.sds.enabled=true \
             --set values.gateways.istio-egressgateway.enabled=true \

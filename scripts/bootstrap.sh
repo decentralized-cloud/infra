@@ -66,7 +66,7 @@ install_kind()
 
 install_helm()
 {
-	curl -Lo ./helm.tar.gz https://get.helm.sh/helm-v3.0.0-linux-amd64.tar.gz
+	curl -Lo ./helm.tar.gz https://get.helm.sh/helm-v3.0.1-linux-amd64.tar.gz
 	mkdir ./helm
 	tar -C ./helm -xzf helm.tar.gz
 	mv ./helm/linux-amd64/helm /usr/local/bin/

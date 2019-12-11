@@ -54,14 +54,14 @@ function start() {
 
 	# deploying istio
 	istioctl manifest apply \
-            --set values.global.mtls.enabled=true \
-            --set values.global.controlPlaneSecurityEnabled=true \
-            --set values.gateways.istio-ingressgateway.enabled=true \
-            --set values.gateways.istio-ingressgateway.sds.enabled=true \
-            --set values.gateways.istio-egressgateway.enabled=true \
-            --set values.kiali.enabled=true \
-            --set values.global.proxy.accessLogFile="/dev/stdout" \
-            --set values.sidecarInjectorWebhook.rewriteAppHTTPProbe=true
+		--set values.global.mtls.enabled=true \
+		--set values.global.controlPlaneSecurityEnabled=true \
+		--set values.gateways.istio-ingressgateway.enabled=true \
+		--set values.gateways.istio-ingressgateway.sds.enabled=true \
+		--set values.gateways.istio-egressgateway.enabled=true \
+		--set values.kiali.enabled=true \
+		--set values.global.proxy.accessLogFile="/dev/stdout" \
+		--set values.sidecarInjectorWebhook.rewriteAppHTTPProbe=true
 
 	# installing Kiali dashboard
 	kubectl apply -f "$ISTIO_KIALI_SECRET_CONFIG"
@@ -69,11 +69,19 @@ function start() {
 
 	# deploying mongodb, make sure you deploy after istio deployment is done, so it inject sidecar for mongodb
 	helm install mongodb \
-        stable/mongodb \
-        --set volumePermissions.enabled=true \
-        --set usePassword=false \
-        -n edge \
-        --wait
+		stable/mongodb \
+		--set volumePermissions.enabled=true \
+		--set usePassword=false \
+		-n edge \
+		--wait
+
+	helm install keycloak codecentric/keycloak \
+		--set keycloak.password=password \
+		--set keycloak.persistence.deployPostgres=true \
+		--set keycloak.persistence.dbVendor=postgres \
+		--set postgresql.postgresPassword=password \
+		-n edge \
+		--wait
 
 	# applying istio ingress related config
 	kubectl apply -n istio-system -f "$CERT_MANAGER_EDGE_CLOUD_CERTIFICATE_CONFIG"

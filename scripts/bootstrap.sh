@@ -88,13 +88,13 @@ add_helm_repos()
 	helm repo add decentralized-cloud https://decentralized-cloud.github.io/helm
 
 	# istio repo
-	helm repo add istio.io https://storage.googleapis.com/istio-release/releases/1.4.0/charts/
+	helm repo add istio.io https://storage.googleapis.com/istio-release/releases/1.4.2/charts/
 
 	# cert-manager repo
 	helm repo add jetstack https://charts.jetstack.io
 
-	# ory repo
-	helm repo add ory https://k8s.ory.sh/helm/charts
+	# keycloak repo
+	helm repo add codecentric https://codecentric.github.io/helm-charts
 
 	helm repo update
 }

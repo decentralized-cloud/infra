@@ -76,9 +76,9 @@ install_helm()
 
 install_istioctl()
 {
-	curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.4.0  sh -
-	mv istio-1.4.0/bin/istioctl /usr/local/bin/
-	rm -rf istio-1.4.0
+	curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.4.2  sh -
+	mv istio-1.4.2/bin/istioctl /usr/local/bin/
+	rm -rf istio-1.4.2
 }
 
 add_helm_repos()

@@ -13,11 +13,15 @@ DEFAULT_METALLB_CONFIG=./config/default_metallb_config.yaml
 KEYPAIR_FILE_PATH=./certificates/ca.key
 CERTIFICATE_FILE_PATH=./certificates/ca.crt
 CERT_MANAGER_SELF_SIGNING_CLUSTER_ISSUER_CONFIG=./config/cert-manager/self-signing-clusterissuer.yaml
-CERT_MANAGER_EDGE_CLOUD_CERTIFICATE_CONFIG=./config/cert-manager/edge-cloud-certificate.yaml
+CERT_MANAGER_FRONTEND_EDGE_CLOUD_CERTIFICATE_CONFIG=./config/cert-manager/frontend-edge-cloud-certificate.yaml
+CERT_MANAGER_API_EDGE_CLOUD_CERTIFICATE_CONFIG=./config/cert-manager/api-edge-cloud-certificate.yaml
+CERT_MANAGER_IDP_EDGE_CLOUD_CERTIFICATE_CONFIG=./config/cert-manager/idp-edge-cloud-certificate.yaml
 
 ISTIO_KIALI_SECRET_CONFIG=./config/istio/kiali_secret.yaml
 ISTIO_GATEWAY_CONFIG=./config/istio/gateway.yaml
-ISTIO_VIRTUALSERVICE_CONFIG=./config/istio/virtualservice.yaml
+ISTIO_VIRTUALSERVICE_FRONTEND_CONFIG=./config/istio/frontend-virtualservice.yaml
+ISTIO_VIRTUALSERVICE_API_CONFIG=./config/istio/api-virtualservice.yaml
+ISTIO_VIRTUALSERVICE_IDP_CONFIG=./config/istio/idp-virtualservice.yaml
 
 DEFAULT_SERVICES_CONFIG=./config/edge_services.json
 
@@ -84,9 +88,14 @@ function start() {
 		--wait
 
 	# applying istio ingress related config
-	kubectl apply -n istio-system -f "$CERT_MANAGER_EDGE_CLOUD_CERTIFICATE_CONFIG"
+	kubectl apply -n istio-system -f "$CERT_MANAGER_FRONTEND_EDGE_CLOUD_CERTIFICATE_CONFIG"
+	kubectl apply -n istio-system -f "$CERT_MANAGER_API_EDGE_CLOUD_CERTIFICATE_CONFIG"
+	kubectl apply -n istio-system -f "$CERT_MANAGER_IDP_EDGE_CLOUD_CERTIFICATE_CONFIG"
+
 	kubectl -n edge apply -f <(istioctl kube-inject -f "$ISTIO_GATEWAY_CONFIG")
-	kubectl -n edge apply -f <(istioctl kube-inject -f "$ISTIO_VIRTUALSERVICE_CONFIG")
+	kubectl -n edge apply -f <(istioctl kube-inject -f "$ISTIO_VIRTUALSERVICE_FRONTEND_CONFIG")
+	kubectl -n edge apply -f <(istioctl kube-inject -f "$ISTIO_VIRTUALSERVICE_API_CONFIG")
+	kubectl -n edge apply -f <(istioctl kube-inject -f "$ISTIO_VIRTUALSERVICE_IDP_CONFIG")
 
 	echo "You need to make sure edge-cloud.com is added to your /etc/hosts file locally"
 	echo "If you are using kind, you most likely got 172.17.255.1 as its IP address"
@@ -164,7 +173,7 @@ function deploy_frontend_service() {
     helm_chart_version="$(jq -r '."'"frontend"'".helm_chart_version' < "$1")"
     app_version="$(jq -r '."'"frontend"'".app_version' < "$1")"
     echo -e "\nInstalling helm chart for frontend helm_chart_version=$helm_chart_version app_version=$app_version\n"
-    helm install "frontend" decentralized-cloud/"frontend" -n edge --version "$helm_chart_version" --set app-version="$app_version" --set pod.apiGateway.url="https://edge-cloud.com/api/graphql"  --wait
+    helm install "frontend" decentralized-cloud/"frontend" -n edge --version "$helm_chart_version" --set app-version="$app_version" --set pod.apiGateway.url="https://api.edge-cloud.com/graphql"  --wait
 }
 
 case $1 in

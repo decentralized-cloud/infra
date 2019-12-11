@@ -19,4 +19,28 @@
           mode: SIMPLE
           privateKey: sds
           serverCertificate: sds
+      - 
+        hosts: 
+          - api.edge-cloud.com
+        port: 
+          name: https-443-api-edge-cloud-com
+          number: 443
+          protocol: HTTPS
+        tls: 
+          credentialName: api-edge-cloud-com
+          mode: SIMPLE
+          privateKey: sds
+          serverCertificate: sds
+      - 
+        hosts: 
+          - idp.edge-cloud.com
+        port: 
+          name: https-443-idp-edge-cloud-com
+          number: 443
+          protocol: HTTPS
+        tls: 
+          credentialName: idp-edge-cloud-com
+          mode: SIMPLE
+          privateKey: sds
+          serverCertificate: sds
   

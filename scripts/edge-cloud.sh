@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 set -e
+set -x
 
 current_directory=$(dirname "$0")
 cd "$current_directory"/..

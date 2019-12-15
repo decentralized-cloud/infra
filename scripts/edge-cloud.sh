@@ -17,14 +17,12 @@ CERT_MANAGER_SELF_SIGNING_CLUSTER_ISSUER_CONFIG=./config/cert-manager/self-signi
 CERT_MANAGER_FRONTEND_EDGE_CLOUD_CERTIFICATE_CONFIG=./config/cert-manager/frontend-edge-cloud-certificate.yaml
 CERT_MANAGER_API_EDGE_CLOUD_CERTIFICATE_CONFIG=./config/cert-manager/api-edge-cloud-certificate.yaml
 CERT_MANAGER_IDP_EDGE_CLOUD_CERTIFICATE_CONFIG=./config/cert-manager/idp-edge-cloud-certificate.yaml
-CERT_MANAGER_IDP_HEADLESS_EDGE_CLOUD_CERTIFICATE_CONFIG=./config/cert-manager/idp-headless-edge-cloud-certificate.yaml
 
 ISTIO_KIALI_SECRET_CONFIG=./config/istio/kiali_secret.yaml
 ISTIO_GATEWAY_CONFIG=./config/istio/gateway.yaml
 ISTIO_VIRTUALSERVICE_FRONTEND_CONFIG=./config/istio/frontend-virtualservice.yaml
 ISTIO_VIRTUALSERVICE_API_CONFIG=./config/istio/api-virtualservice.yaml
 ISTIO_VIRTUALSERVICE_IDP_CONFIG=./config/istio/idp-virtualservice.yaml
-ISTIO_VIRTUALSERVICE_IDP_HEADLESS_CONFIG=./config/istio/idp-headless-virtualservice.yaml
 
 DEFAULT_SERVICES_CONFIG=./config/edge_services.json
 
@@ -94,13 +92,11 @@ function start() {
 	kubectl apply -n istio-system -f "$CERT_MANAGER_FRONTEND_EDGE_CLOUD_CERTIFICATE_CONFIG"
 	kubectl apply -n istio-system -f "$CERT_MANAGER_API_EDGE_CLOUD_CERTIFICATE_CONFIG"
 	kubectl apply -n istio-system -f "$CERT_MANAGER_IDP_EDGE_CLOUD_CERTIFICATE_CONFIG"
-	kubectl apply -n istio-system -f "$CERT_MANAGER_IDP_HEADLESS_EDGE_CLOUD_CERTIFICATE_CONFIG"
 
 	kubectl -n edge apply -f <(istioctl kube-inject -f "$ISTIO_GATEWAY_CONFIG")
 	kubectl -n edge apply -f <(istioctl kube-inject -f "$ISTIO_VIRTUALSERVICE_FRONTEND_CONFIG")
 	kubectl -n edge apply -f <(istioctl kube-inject -f "$ISTIO_VIRTUALSERVICE_API_CONFIG")
 	kubectl -n edge apply -f <(istioctl kube-inject -f "$ISTIO_VIRTUALSERVICE_IDP_CONFIG")
-	kubectl -n edge apply -f <(istioctl kube-inject -f "$ISTIO_VIRTUALSERVICE_IDP_HEADLESS_CONFIG")
 
 	echo "You need to make sure edge-cloud.com is added to your /etc/hosts file locally"
 	echo "If you are using kind, you most likely got 172.17.255.1 as its IP address"

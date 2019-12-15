@@ -174,7 +174,14 @@ function deploy_frontend_service() {
     helm_chart_version="$(jq -r '."'"frontend"'".helm_chart_version' < "$1")"
     app_version="$(jq -r '."'"frontend"'".app_version' < "$1")"
     echo -e "\nInstalling helm chart for frontend helm_chart_version=$helm_chart_version app_version=$app_version\n"
-    helm install "frontend" decentralized-cloud/"frontend" -n edge --version "$helm_chart_version" --set app-version="$app_version" --set pod.apiGateway.url="https://api.edge-cloud.com/graphql"  --wait
+    helm install "frontend" decentralized-cloud/"frontend" \
+		-n edge \
+		--version "$helm_chart_version" \
+		--set app-version="$app_version" \
+		--set pod.apiGateway.url="https://api.edge-cloud.com/graphql" \
+		--set pod.idp.clientAuthorityUrl="https://idp.edge-cloud.com/auth/realms/master" \
+		--set pod.idp.clientId="edge-cloud" \
+		--wait
 }
 
 case $1 in

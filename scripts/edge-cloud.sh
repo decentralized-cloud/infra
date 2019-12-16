@@ -39,21 +39,27 @@ function start() {
 	kind create cluster --config "$KIND_CONFIG" --wait 5m # Block until control plane is ready
 
 	# deploying metallb
-	kubectl apply -f https://raw.githubusercontent.com/google/metallb/v0.8.3/manifests/metallb.yaml
-	kubectl apply -f "$DEFAULT_METALLB_CONFIG"
+	kubectl create namespace metallb-system
+	helm install metallb \
+		stable/metallb \
+		--version v0.12.0 \
+		--set app-version=0.8.3 \
+		-n metallb-system \
+		--wait
+	kubectl apply -f "$DEFAULT_METALLB_CONFIG" -n metallb-system
 
-	# installing cert-manager
+	# deploying cert-manager
 	kubectl apply -f https://raw.githubusercontent.com/jetstack/cert-manager/release-0.12/deploy/manifests/00-crds.yaml
 	kubectl create namespace cert-manager
 	helm install cert-manager \
-		jetstack/cert-manager  \
+		jetstack/cert-manager \
 		--version v0.12.0 \
 		-n cert-manager \
 		--wait
 	kubectl create secret tls ca-key-pair --key="$KEYPAIR_FILE_PATH" --cert="$CERTIFICATE_FILE_PATH" -n cert-manager
 	kubectl apply -n cert-manager -f "$CERT_MANAGER_SELF_SIGNING_CLUSTER_ISSUER_CONFIG"
 
-    # configuring edge namespace requirements
+	# configuring edge namespace
 	kubectl create namespace edge
 	kubectl label namespace edge istio-injection=enabled # labeling the edge namespace to enable automatic istio sidecar injection
 
@@ -68,7 +74,7 @@ function start() {
 		--set values.global.proxy.accessLogFile="/dev/stdout" \
 		--set values.sidecarInjectorWebhook.rewriteAppHTTPProbe=true
 
-	# installing Kiali dashboard
+	# deploying Kiali dashboard
 	kubectl apply -f "$ISTIO_KIALI_SECRET_CONFIG"
 	echo "Enter 'istioctl dashboard kiali' to access kiali dashboard"
 
@@ -80,6 +86,7 @@ function start() {
 		-n edge \
 		--wait
 
+	# deploying keycloak identity provider	
 	helm install keycloak codecentric/keycloak \
 		--set keycloak.password=password \
 		--set keycloak.persistence.deployPostgres=true \
@@ -175,13 +182,13 @@ function deploy_frontend_service() {
     app_version="$(jq -r '."'"frontend"'".app_version' < "$1")"
     echo -e "\nInstalling helm chart for frontend helm_chart_version=$helm_chart_version app_version=$app_version\n"
     helm install "frontend" decentralized-cloud/"frontend" \
-		-n edge \
-		--version "$helm_chart_version" \
-		--set app-version="$app_version" \
-		--set pod.apiGateway.url="https://api.edge-cloud.com/graphql" \
-		--set pod.idp.clientAuthorityUrl="https://idp.edge-cloud.com/auth/realms/master" \
-		--set pod.idp.clientId="edge-cloud" \
-		--wait
+	-n edge \
+	--version "$helm_chart_version" \
+	--set app-version="$app_version" \
+	--set pod.apiGateway.url="https://api.edge-cloud.com/graphql" \
+	--set pod.idp.clientAuthorityUrl="https://idp.edge-cloud.com/auth/realms/master" \
+	--set pod.idp.clientId="edge-cloud" \
+	--wait
 }
 
 case $1 in

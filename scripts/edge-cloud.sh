@@ -58,7 +58,7 @@ function set_local_variable() {
         EDGE_CLOUD_API_GATEWAY_URL="https://api-edgecloud.zapto.org/graphql"
         EDGE_CLOUD_IDP_URL="https://idp-edgecloud.zapto.org/auth/realms/master"
     fi
-}
+}_local_demo_server
 
 function create_and_configure_edge_namespace() {
     kubectl create namespace edge
@@ -107,13 +107,7 @@ function deploy_istio() {
 function deploy_mongodb() {
     helm install mongodb \
         stable/mongodb \
-        --set volumePermissions.enabled=true \
-        --set usePassword=false \
-        -n edge \
-        --wait
-}
-
-function deploy_keycloak() {
+        --set volumePermissions.enabled=true \_local_demo_server
     helm install keycloak codecentric/keycloak \
         --set keycloak.password=password \
         --set keycloak.persistence.deployPostgres=true \
@@ -138,15 +132,15 @@ function apply_edge_cloud_config() {
 function deploy_calico() {
     kubectl apply -f "$DEMO_SERVER_CALICO"
 }
-
-function print_help() {
-    set +x
+_local_demo_server
 
     echo -e "Usage: $1 [command]\n"
     echo "Available Commands:"
     echo -e "\t generate_local_self_signed_certificate \n\t\t Generate new set of local self-signed certificates"
     echo -e "\t start \n\t\t Start local Kind K8s cluster"
     echo -e "\t stop \n\t\t Stop local Kind K8s cluster"
+    echo -e "\t start_local_demo_server \n\t\t Start local demo server K8s cluster"
+    echo -e "\t stop_local_demo_server \n\t\t Stop local demo server K8s cluster"
     echo -e "\t deploy_services <config config_path>\n\t\t Deploy all edge services"
     echo -e "\t remove_services \n\t\t Remove all edge services"
 }

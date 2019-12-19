@@ -58,7 +58,7 @@ function set_local_variable() {
         EDGE_CLOUD_API_GATEWAY_URL="https://api-edgecloud.zapto.org/graphql"
         EDGE_CLOUD_IDP_URL="https://idp-edgecloud.zapto.org/auth/realms/master"
     fi
-}_local_demo_server
+}
 
 function create_and_configure_edge_namespace() {
     kubectl create namespace edge
@@ -107,7 +107,13 @@ function deploy_istio() {
 function deploy_mongodb() {
     helm install mongodb \
         stable/mongodb \
-        --set volumePermissions.enabled=true \_local_demo_server
+        --set volumePermissions.enabled=true \
+        --set usePassword=false \
+        -n edge \
+        --wait
+}
+
+function deploy_keycloak() {
     helm install keycloak codecentric/keycloak \
         --set keycloak.password=password \
         --set keycloak.persistence.deployPostgres=true \

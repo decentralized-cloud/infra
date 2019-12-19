@@ -86,7 +86,7 @@ function start() {
 		-n edge \
 		--wait
 
-	# deploying keycloak identity provider	
+	# deploying keycloak identity provider
 	helm install keycloak codecentric/keycloak \
 		--set keycloak.password=password \
 		--set keycloak.persistence.deployPostgres=true \
@@ -174,7 +174,7 @@ function deploy_a_service() {
     helm_chart_version="$(jq -r '."'"$2"'".helm_chart_version' < "$1")"
     app_version="$(jq -r '."'"$2"'".app_version' < "$1")"
     echo -e "\nInstalling helm chart for $2 helm_chart_version=$helm_chart_version app_version=$app_version\n"
-    helm install "$2" decentralized-cloud/"$2" -n edge --version "$helm_chart_version" --set app-version="$app_version" --wait
+    helm install "$2" decentralized-cloud/"$2" -n edge --version "$helm_chart_version" --set app-version="$app_version" --set image.pullPolicy="Always" --wait
 }
 
 function deploy_frontend_service() {
@@ -185,6 +185,7 @@ function deploy_frontend_service() {
 	-n edge \
 	--version "$helm_chart_version" \
 	--set app-version="$app_version" \
+	--set image.pullPolicy="Always" \
 	--set pod.apiGateway.url="https://api.edge-cloud.com/graphql" \
 	--set pod.idp.clientAuthorityUrl="https://idp.edge-cloud.com/auth/realms/master" \
 	--set pod.idp.clientId="edge-cloud" \

@@ -3,15 +3,15 @@
 set -e
 
 cleanup() {
-	docker rm extract-generate-certificate
+    docker rm extract-generate-certificate
 }
 
 trap 'cleanup' EXIT
 
 if [ $# -eq 0 ]; then
-	current_directory=$(dirname "$0")
+    current_directory=$(dirname "$0")
 else
-	current_directory="$1"
+    current_directory="$1"
 fi
 
 cd "$current_directory"/..

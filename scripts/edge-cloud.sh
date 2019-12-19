@@ -27,7 +27,7 @@ ISTIO_VIRTUALSERVICE_IDP_CONFIG=./config/istio/idp-virtualservice.yaml
 DEFAULT_SERVICES_CONFIG=./config/edge_services.json
 
 function print_help() {
-	echo -e "Usage: $1 [command]\n"
+    echo -e "Usage: $1 [command]\n"
     echo "Available Commands:"
     echo -e "\tstart \t\t\t\t\tStart Kind K8s cluster"
     echo -e "\tstop \t\t\t\t\tStop Kind K8s cluster"
@@ -36,83 +36,83 @@ function print_help() {
 }
 
 function start() {
-	kind create cluster --config "$KIND_CONFIG" --wait 5m # Block until control plane is ready
+    kind create cluster --config "$KIND_CONFIG" --wait 5m # Block until control plane is ready
 
-	# deploying metallb
-	kubectl create namespace metallb-system
-	helm install metallb \
-		stable/metallb \
-		--version v0.12.0 \
-		--set app-version=0.8.3 \
-		-n metallb-system \
-		--wait
-	kubectl apply -f "$DEFAULT_METALLB_CONFIG" -n metallb-system
+    # deploying metallb
+    kubectl create namespace metallb-system
+    helm install metallb \
+        stable/metallb \
+        --version v0.12.0 \
+        --set app-version=0.8.3 \
+        -n metallb-system \
+        --wait
+    kubectl apply -f "$DEFAULT_METALLB_CONFIG" -n metallb-system
 
-	# deploying cert-manager
-	kubectl apply -f https://raw.githubusercontent.com/jetstack/cert-manager/release-0.12/deploy/manifests/00-crds.yaml
-	kubectl create namespace cert-manager
-	helm install cert-manager \
-		jetstack/cert-manager \
-		--version v0.12.0 \
-		-n cert-manager \
-		--wait
-	kubectl create secret tls ca-key-pair --key="$KEYPAIR_FILE_PATH" --cert="$CERTIFICATE_FILE_PATH" -n cert-manager
-	kubectl apply -n cert-manager -f "$CERT_MANAGER_SELF_SIGNING_CLUSTER_ISSUER_CONFIG"
+    # deploying cert-manager
+    kubectl apply -f https://raw.githubusercontent.com/jetstack/cert-manager/release-0.12/deploy/manifests/00-crds.yaml
+    kubectl create namespace cert-manager
+    helm install cert-manager \
+        jetstack/cert-manager \
+        --version v0.12.0 \
+        -n cert-manager \
+        --wait
+    kubectl create secret tls ca-key-pair --key="$KEYPAIR_FILE_PATH" --cert="$CERTIFICATE_FILE_PATH" -n cert-manager
+    kubectl apply -n cert-manager -f "$CERT_MANAGER_SELF_SIGNING_CLUSTER_ISSUER_CONFIG"
 
-	# configuring edge namespace
-	kubectl create namespace edge
-	kubectl label namespace edge istio-injection=enabled # labeling the edge namespace to enable automatic istio sidecar injection
+    # configuring edge namespace
+    kubectl create namespace edge
+    kubectl label namespace edge istio-injection=enabled # labeling the edge namespace to enable automatic istio sidecar injection
 
-	# deploying istio
-	istioctl manifest apply \
-		--set values.global.mtls.enabled=true \
-		--set values.global.controlPlaneSecurityEnabled=true \
-		--set values.gateways.istio-ingressgateway.enabled=true \
-		--set values.gateways.istio-ingressgateway.sds.enabled=true \
-		--set values.gateways.istio-egressgateway.enabled=true \
-		--set values.kiali.enabled=true \
-		--set values.global.proxy.accessLogFile="/dev/stdout" \
-		--set values.sidecarInjectorWebhook.rewriteAppHTTPProbe=true
+    # deploying istio
+    istioctl manifest apply \
+        --set values.global.mtls.enabled=true \
+        --set values.global.controlPlaneSecurityEnabled=true \
+        --set values.gateways.istio-ingressgateway.enabled=true \
+        --set values.gateways.istio-ingressgateway.sds.enabled=true \
+        --set values.gateways.istio-egressgateway.enabled=true \
+        --set values.kiali.enabled=true \
+        --set values.global.proxy.accessLogFile="/dev/stdout" \
+        --set values.sidecarInjectorWebhook.rewriteAppHTTPProbe=true
 
-	# deploying Kiali dashboard
-	kubectl apply -f "$ISTIO_KIALI_SECRET_CONFIG"
-	echo "Enter 'istioctl dashboard kiali' to access kiali dashboard"
+    # deploying Kiali dashboard
+    kubectl apply -f "$ISTIO_KIALI_SECRET_CONFIG"
+    echo "Enter 'istioctl dashboard kiali' to access kiali dashboard"
 
-	# deploying mongodb, make sure you deploy after istio deployment is done, so it inject sidecar for mongodb
-	helm install mongodb \
-		stable/mongodb \
-		--set volumePermissions.enabled=true \
-		--set usePassword=false \
-		-n edge \
-		--wait
+    # deploying mongodb, make sure you deploy after istio deployment is done, so it inject sidecar for mongodb
+    helm install mongodb \
+        stable/mongodb \
+        --set volumePermissions.enabled=true \
+        --set usePassword=false \
+        -n edge \
+        --wait
 
-	# deploying keycloak identity provider
-	helm install keycloak codecentric/keycloak \
-		--set keycloak.password=password \
-		--set keycloak.persistence.deployPostgres=true \
-		--set keycloak.persistence.dbVendor=postgres \
-		--set postgresql.postgresPassword=password \
-		-n edge \
-		--wait
+    # deploying keycloak identity provider
+    helm install keycloak codecentric/keycloak \
+        --set keycloak.password=password \
+        --set keycloak.persistence.deployPostgres=true \
+        --set keycloak.persistence.dbVendor=postgres \
+        --set postgresql.postgresPassword=password \
+        -n edge \
+        --wait
 
-	# applying istio ingress related config
-	kubectl apply -n istio-system -f "$CERT_MANAGER_FRONTEND_EDGE_CLOUD_CERTIFICATE_CONFIG"
-	kubectl apply -n istio-system -f "$CERT_MANAGER_API_EDGE_CLOUD_CERTIFICATE_CONFIG"
-	kubectl apply -n istio-system -f "$CERT_MANAGER_IDP_EDGE_CLOUD_CERTIFICATE_CONFIG"
+    # applying istio ingress related config
+    kubectl apply -n istio-system -f "$CERT_MANAGER_FRONTEND_EDGE_CLOUD_CERTIFICATE_CONFIG"
+    kubectl apply -n istio-system -f "$CERT_MANAGER_API_EDGE_CLOUD_CERTIFICATE_CONFIG"
+    kubectl apply -n istio-system -f "$CERT_MANAGER_IDP_EDGE_CLOUD_CERTIFICATE_CONFIG"
 
-	kubectl -n edge apply -f <(istioctl kube-inject -f "$ISTIO_GATEWAY_CONFIG")
-	kubectl -n edge apply -f <(istioctl kube-inject -f "$ISTIO_VIRTUALSERVICE_FRONTEND_CONFIG")
-	kubectl -n edge apply -f <(istioctl kube-inject -f "$ISTIO_VIRTUALSERVICE_API_CONFIG")
-	kubectl -n edge apply -f <(istioctl kube-inject -f "$ISTIO_VIRTUALSERVICE_IDP_CONFIG")
+    kubectl -n edge apply -f <(istioctl kube-inject -f "$ISTIO_GATEWAY_CONFIG")
+    kubectl -n edge apply -f <(istioctl kube-inject -f "$ISTIO_VIRTUALSERVICE_FRONTEND_CONFIG")
+    kubectl -n edge apply -f <(istioctl kube-inject -f "$ISTIO_VIRTUALSERVICE_API_CONFIG")
+    kubectl -n edge apply -f <(istioctl kube-inject -f "$ISTIO_VIRTUALSERVICE_IDP_CONFIG")
 
-	echo "You need to make sure edge-cloud.com is added to your /etc/hosts file locally"
-	echo "If you are using kind, you most likely got 172.17.255.1 as its IP address"
-	echo "Add following line to your /etc/hosts file:"
-	echo "172.17.255.1 edge-cloud.com"
+    echo "You need to make sure edge-cloud.com is added to your /etc/hosts file locally"
+    echo "If you are using kind, you most likely got 172.17.255.1 as its IP address"
+    echo "Add following line to your /etc/hosts file:"
+    echo "172.17.255.1 edge-cloud.com"
 }
 
 function stop() {
-	kind delete cluster
+    kind delete cluster
 }
 
 readonly EDGE_SERVICES="tenant api-gateway edge-cluster"
@@ -182,18 +182,18 @@ function deploy_frontend_service() {
     app_version="$(jq -r '."'"frontend"'".app_version' < "$1")"
     echo -e "\nInstalling helm chart for frontend helm_chart_version=$helm_chart_version app_version=$app_version\n"
     helm install "frontend" decentralized-cloud/"frontend" \
-	-n edge \
-	--version "$helm_chart_version" \
-	--set app-version="$app_version" \
-	--set image.pullPolicy="Always" \
-	--set pod.apiGateway.url="https://api.edge-cloud.com/graphql" \
-	--set pod.idp.clientAuthorityUrl="https://idp.edge-cloud.com/auth/realms/master" \
-	--set pod.idp.clientId="edge-cloud" \
-	--wait
+        -n edge \
+        --version "$helm_chart_version" \
+        --set app-version="$app_version" \
+        --set image.pullPolicy="Always" \
+        --set pod.apiGateway.url="https://api.edge-cloud.com/graphql" \
+        --set pod.idp.clientAuthorityUrl="https://idp.edge-cloud.com/auth/realms/master" \
+        --set pod.idp.clientId="edge-cloud" \
+        --wait
 }
 
 case $1 in
-	start|stop|remove_services) "$1" ;;
+    start|stop|remove_services) "$1" ;;
     deploy_services) "$1" "${@:2}" ;;
-	*) print_help "$0" ;;
+    *) print_help "$0" ;;
 esac

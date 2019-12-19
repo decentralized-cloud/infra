@@ -191,7 +191,7 @@ function start_local_demo_server() {
     sudo kubeadm init --pod-network-cidr=172.16.0.0/16 --apiserver-advertise-address=192.168.1.3
 
     mkdir -p "$HOME"/.kube
-    sudo cp -i /etc/kubernetes/admin.conf "$HOME"/.kube/config
+    sudo cp /etc/kubernetes/admin.conf "$HOME"/.kube/config
     sudo chown "$(id -u)":"$(id -g)" "$HOME"/.kube/config
 
     kubectl taint nodes --all node-role.kubernetes.io/master-

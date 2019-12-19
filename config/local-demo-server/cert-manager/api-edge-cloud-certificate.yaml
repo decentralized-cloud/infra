@@ -1,0 +1,14 @@
+--- 
+  apiVersion: cert-manager.io/v1alpha2
+  kind: Certificate
+  metadata: 
+    name: api-edgecloud-zapto-org
+  spec: 
+    commonName: api-edgecloud.zapto.org
+    dnsNames: 
+      - api-edgecloud.zapto.org
+    issuerRef: 
+      kind: ClusterIssuer
+      name: self-signed-ca-cluster-issuer
+    secretName: api-edgecloud-zapto-org
+  

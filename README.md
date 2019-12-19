@@ -42,7 +42,7 @@ Alternatively, you can use our helper script to deploy a cluster by using the co
 There are currently two ways to deploy Edge services; first deploying with no config, which will pull the latest version of each service's helm chart, second with a config which specifies the version for each service. This can be done running the following commands:
 
     ./script/edge-cloud.sh deploy_services # Deploy latest version for all services
-    ./script/edge-cloud.sh deploy_services --config ./config/edge_services.json # Modify services with pinned version specified in edge_services.json
+    ./script/edge-cloud.sh deploy_services --config ./config/common/edge-cloud/services.json # Modify services with pinned version specified in services.json
 
     ./script/edge-cloud.sh remove_services # To remove all services from cluster and Helm
 

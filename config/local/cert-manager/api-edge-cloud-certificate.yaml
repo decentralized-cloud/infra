@@ -9,6 +9,6 @@
       - api.edge-cloud.com
     issuerRef: 
       kind: ClusterIssuer
-      name: ca-cluster-issuer
+      name: self-signed-ca-cluster-issuer
     secretName: api-edge-cloud-com
   

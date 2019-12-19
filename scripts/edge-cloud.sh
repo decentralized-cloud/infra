@@ -6,39 +6,66 @@ set -x
 current_directory=$(dirname "$0")
 cd "$current_directory"/..
 
-DEFAULT_CONFIG=./config/default_kind_config.yaml
-KIND_CONFIG="${KIND_CONFIG:-"$DEFAULT_CONFIG"}"
+# Common Config
+ISTIO_KIALI_SECRET_CONFIG=./config/common/istio/kiali_secret.yaml
+EDGE_CLOUD_SERVICES_CONFIG=./config/common/edge-cloud/services.json
 
-DEFAULT_METALLB_CONFIG=./config/default_metallb_config.yaml
+function set_local_variable() {
+    if [ "$local_demo_server_deployment" = false ]; then
+        KIND_CONFIG="${KIND_CONFIG:-./config/local/kind_config.yaml}"
 
-KEYPAIR_FILE_PATH=./certificates/ca.key
-CERTIFICATE_FILE_PATH=./certificates/ca.crt
-CERT_MANAGER_SELF_SIGNING_CLUSTER_ISSUER_CONFIG=./config/cert-manager/self-signing-clusterissuer.yaml
-CERT_MANAGER_FRONTEND_EDGE_CLOUD_CERTIFICATE_CONFIG=./config/cert-manager/frontend-edge-cloud-certificate.yaml
-CERT_MANAGER_API_EDGE_CLOUD_CERTIFICATE_CONFIG=./config/cert-manager/api-edge-cloud-certificate.yaml
-CERT_MANAGER_IDP_EDGE_CLOUD_CERTIFICATE_CONFIG=./config/cert-manager/idp-edge-cloud-certificate.yaml
+        # metallb
+        METALLB_CONFIG=./config/local/metallb_config.yaml
 
-ISTIO_KIALI_SECRET_CONFIG=./config/istio/kiali_secret.yaml
-ISTIO_GATEWAY_CONFIG=./config/istio/gateway.yaml
-ISTIO_VIRTUALSERVICE_FRONTEND_CONFIG=./config/istio/frontend-virtualservice.yaml
-ISTIO_VIRTUALSERVICE_API_CONFIG=./config/istio/api-virtualservice.yaml
-ISTIO_VIRTUALSERVICE_IDP_CONFIG=./config/istio/idp-virtualservice.yaml
+        # cert-manager
+        CERT_MANAGER_KEYPAIR_FILE_PATH=./certificates/ca.key
+        CERT_MANAGER_CERTIFICATE_FILE_PATH=./certificates/ca.crt
+        CERT_MANAGER_SELF_SIGNING_CLUSTER_ISSUER_CONFIG=./config/local/cert-manager/self-signing-clusterissuer.yaml
+        CERT_MANAGER_FRONTEND_EDGE_CLOUD_CERTIFICATE_CONFIG=./config/local/cert-manager/frontend-edge-cloud-certificate.yaml
+        CERT_MANAGER_API_EDGE_CLOUD_CERTIFICATE_CONFIG=./config/local/cert-manager/api-edge-cloud-certificate.yaml
+        CERT_MANAGER_IDP_EDGE_CLOUD_CERTIFICATE_CONFIG=./config/local/cert-manager/idp-edge-cloud-certificate.yaml
 
-DEFAULT_SERVICES_CONFIG=./config/edge_services.json
+        # istio
+        ISTIO_GATEWAY_CONFIG=./config/local/istio/gateway.yaml
+        ISTIO_VIRTUALSERVICE_FRONTEND_CONFIG=./config/local/istio/frontend-virtualservice.yaml
+        ISTIO_VIRTUALSERVICE_API_CONFIG=./config/local/istio/api-virtualservice.yaml
+        ISTIO_VIRTUALSERVICE_IDP_CONFIG=./config/local/istio/idp-virtualservice.yaml
 
-function print_help() {
-    echo -e "Usage: $1 [command]\n"
-    echo "Available Commands:"
-    echo -e "\tstart \t\t\t\t\tStart Kind K8s cluster"
-    echo -e "\tstop \t\t\t\t\tStop Kind K8s cluster"
-    echo -e "\tdeploy_services <--config config_path>\tDeploy all edge services"
-    echo -e "\tremove_services \t\t\tRemove all edge services"
+        # edge-cloud
+        EDGE_CLOUD_API_GATEWAY_URL="https://api.edge-cloud.com/graphql"
+        EDGE_CLOUD_IDP_URL="https://idp.edge-cloud.com/auth/realms/master"
+    else
+        CALICO=./config/local-demo-server/calico.yaml
+
+        # metallb
+        METALLB_CONFIG=./config/local-demo-server/metallb_config.yaml
+
+        # cert-manager
+        CERT_MANAGER_KEYPAIR_FILE_PATH=./certificates/ca.key
+        CERT_MANAGER_CERTIFICATE_FILE_PATH=./certificates/ca.crt
+        CERT_MANAGER_SELF_SIGNING_CLUSTER_ISSUER_CONFIG=./config/local-demo-server/cert-manager/self-signing-clusterissuer.yaml
+        CERT_MANAGER_FRONTEND_EDGE_CLOUD_CERTIFICATE_CONFIG=./config/local-demo-server/cert-manager/frontend-edge-cloud-certificate.yaml
+        CERT_MANAGER_API_EDGE_CLOUD_CERTIFICATE_CONFIG=./config/local-demo-server/cert-manager/api-edge-cloud-certificate.yaml
+        CERT_MANAGER_IDP_EDGE_CLOUD_CERTIFICATE_CONFIG=./config/local-demo-server/cert-manager/idp-edge-cloud-certificate.yaml
+
+        # istio
+        ISTIO_GATEWAY_CONFIG=./config/local-demo-server/istio/gateway.yaml
+        ISTIO_VIRTUALSERVICE_FRONTEND_CONFIG=./config/local-demo-server/istio/frontend-virtualservice.yaml
+        ISTIO_VIRTUALSERVICE_API_CONFIG=./config/local-demo-server/istio/api-virtualservice.yaml
+        ISTIO_VIRTUALSERVICE_IDP_CONFIG=./config/local-demo-server/istio/idp-virtualservice.yaml
+
+        # edge-cloud
+        EDGE_CLOUD_API_GATEWAY_URL="https://api-edgecloud.zapto.org/graphql"
+        EDGE_CLOUD_IDP_URL="https://idp-edgecloud.zapto.org/auth/realms/master"
+    fi
 }
 
-function start() {
-    kind create cluster --config "$KIND_CONFIG" --wait 5m # Block until control plane is ready
+function create_and_configure_edge_namespace() {
+    kubectl create namespace edge
+    kubectl label namespace edge istio-injection=enabled # labeling the edge namespace to enable automatic istio sidecar injection
+}
 
-    # deploying metallb
+function deploy_helm() {
     kubectl create namespace metallb-system
     helm install metallb \
         stable/metallb \
@@ -46,9 +73,10 @@ function start() {
         --set app-version=0.8.3 \
         -n metallb-system \
         --wait
-    kubectl apply -f "$DEFAULT_METALLB_CONFIG" -n metallb-system
+    kubectl apply -f "$METALLB_CONFIG" -n metallb-system
+}
 
-    # deploying cert-manager
+function deploy_cert_manager() {
     kubectl apply -f https://raw.githubusercontent.com/jetstack/cert-manager/release-0.12/deploy/manifests/00-crds.yaml
     kubectl create namespace cert-manager
     helm install cert-manager \
@@ -56,14 +84,11 @@ function start() {
         --version v0.12.0 \
         -n cert-manager \
         --wait
-    kubectl create secret tls ca-key-pair --key="$KEYPAIR_FILE_PATH" --cert="$CERTIFICATE_FILE_PATH" -n cert-manager
+    kubectl create secret tls ca-key-pair --key="$CERT_MANAGER_KEYPAIR_FILE_PATH" --cert="$CERT_MANAGER_CERTIFICATE_FILE_PATH" -n cert-manager
     kubectl apply -n cert-manager -f "$CERT_MANAGER_SELF_SIGNING_CLUSTER_ISSUER_CONFIG"
+}
 
-    # configuring edge namespace
-    kubectl create namespace edge
-    kubectl label namespace edge istio-injection=enabled # labeling the edge namespace to enable automatic istio sidecar injection
-
-    # deploying istio
+function deploy_istio() {
     istioctl manifest apply \
         --set values.global.mtls.enabled=true \
         --set values.global.controlPlaneSecurityEnabled=true \
@@ -77,16 +102,18 @@ function start() {
     # deploying Kiali dashboard
     kubectl apply -f "$ISTIO_KIALI_SECRET_CONFIG"
     echo "Enter 'istioctl dashboard kiali' to access kiali dashboard"
+}
 
-    # deploying mongodb, make sure you deploy after istio deployment is done, so it inject sidecar for mongodb
+function deploy_mongodb() {
     helm install mongodb \
         stable/mongodb \
         --set volumePermissions.enabled=true \
         --set usePassword=false \
         -n edge \
         --wait
+}
 
-    # deploying keycloak identity provider
+function deploy_keycloak() {
     helm install keycloak codecentric/keycloak \
         --set keycloak.password=password \
         --set keycloak.persistence.deployPostgres=true \
@@ -94,7 +121,9 @@ function start() {
         --set postgresql.postgresPassword=password \
         -n edge \
         --wait
+}
 
+function apply_edge_cloud_config() {
     # applying istio ingress related config
     kubectl apply -n istio-system -f "$CERT_MANAGER_FRONTEND_EDGE_CLOUD_CERTIFICATE_CONFIG"
     kubectl apply -n istio-system -f "$CERT_MANAGER_API_EDGE_CLOUD_CERTIFICATE_CONFIG"
@@ -104,6 +133,44 @@ function start() {
     kubectl -n edge apply -f <(istioctl kube-inject -f "$ISTIO_VIRTUALSERVICE_FRONTEND_CONFIG")
     kubectl -n edge apply -f <(istioctl kube-inject -f "$ISTIO_VIRTUALSERVICE_API_CONFIG")
     kubectl -n edge apply -f <(istioctl kube-inject -f "$ISTIO_VIRTUALSERVICE_IDP_CONFIG")
+}
+
+function deploy_calico() {
+    kubectl apply -f "$DEMO_SERVER_CALICO"
+}
+
+function print_help() {
+    set +x
+
+    echo -e "Usage: $1 [command]\n"
+    echo "Available Commands:"
+    echo -e "\t generate_local_self_signed_certificate \n\t\t Generate new set of local self-signed certificates"
+    echo -e "\t start \n\t\t Start local Kind K8s cluster"
+    echo -e "\t stop \n\t\t Stop local Kind K8s cluster"
+    echo -e "\t deploy_services <config config_path>\n\t\t Deploy all edge services"
+    echo -e "\t remove_services \n\t\t Remove all edge services"
+}
+
+function generate_local_self_signed_certificate() {
+    ./scripts/generate-certificate.sh
+}
+
+function start() {
+    local_demo_server_deployment=false
+    set_local_variable
+
+    kind create cluster --config "$KIND_CONFIG" --wait 5m # Block until control plane is ready
+
+    create_and_configure_edge_namespace
+    deploy_helm
+    deploy_cert_manager
+    deploy_istio
+
+    # deploying mongodb, make sure you deploy after istio deployment is done, so it inject sidecar for mongodb
+    deploy_mongodb
+
+    deploy_keycloak
+    apply_edge_cloud_config
 
     echo "You need to make sure edge-cloud.com is added to your /etc/hosts file locally"
     echo "If you are using kind, you most likely got 172.17.255.1 as its IP address"
@@ -113,6 +180,35 @@ function start() {
 
 function stop() {
     kind delete cluster
+}
+
+function start_local_demo_server() {
+    local_demo_server_deployment=true
+    set_local_variable
+
+    sudo kubeadm init --pod-network-cidr=172.16.0.0/16 --apiserver-advertise-address=192.168.1.3
+
+    mkdir -p "$HOME"/.kube
+    sudo cp -i /etc/kubernetes/admin.conf "$HOME"/.kube/config
+    sudo chown "$(id -u)":"$(id -g)" "$HOME"/.kube/config
+
+    kubectl taint nodes --all node-role.kubernetes.io/master-
+    kubectl apply -f "$CALICO"
+
+    create_and_configure_edge_namespace
+    deploy_helm
+    deploy_cert_manager
+    deploy_istio
+
+    # deploying mongodb, make sure you deploy after istio deployment is done, so it inject sidecar for mongodb
+    deploy_mongodb
+
+    deploy_keycloak
+    apply_edge_cloud_config
+}
+
+function stop_local_demo_server() {
+    sudo kubeadm reset
 }
 
 readonly EDGE_SERVICES="tenant api-gateway edge-cluster"
@@ -156,10 +252,10 @@ function deploy_services() {
     done
 
     for service in $EDGE_SERVICES; do
-        deploy_a_service "$DEFAULT_SERVICES_CONFIG" "$service"
+        deploy_a_service "$EDGE_CLOUD_SERVICES_CONFIG" "$service"
     done
 
-    deploy_frontend_service "$DEFAULT_SERVICES_CONFIG"
+    deploy_frontend_service "$EDGE_CLOUD_SERVICES_CONFIG"
 }
 
 function remove_services() {
@@ -186,14 +282,16 @@ function deploy_frontend_service() {
         --version "$helm_chart_version" \
         --set app-version="$app_version" \
         --set image.pullPolicy="Always" \
-        --set pod.apiGateway.url="https://api.edge-cloud.com/graphql" \
-        --set pod.idp.clientAuthorityUrl="https://idp.edge-cloud.com/auth/realms/master" \
+        --set pod.apiGateway.url="$EDGE_CLOUD_API_GATEWAY_URL" \
+        --set pod.idp.clientAuthorityUrl="$EDGE_CLOUD_IDP_URL" \
         --set pod.idp.clientId="edge-cloud" \
         --wait
 }
 
+local_demo_server_deployment=false
+
 case $1 in
-    start|stop|remove_services) "$1" ;;
+    generate_local_self_signed_certificate|start|stop|start_local_demo_server|stop_local_demo_server|remove_services) "$1" ;;
     deploy_services) "$1" "${@:2}" ;;
     *) print_help "$0" ;;
 esac

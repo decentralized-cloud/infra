@@ -17,12 +17,15 @@ install_curl()
 
 install_kubectl()
 {
-    # TODO Pin kubectl version
-    # Download and move kubectl into /usr/local/bin
-    kubectl_version=$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)
-    curl -LO https://storage.googleapis.com/kubernetes-release/release/"$kubectl_version"/bin/linux/amd64/kubectl
-    chmod +x ./kubectl
-    sudo mv ./kubectl /usr/local/bin/
+    sudo apt-get update && sudo apt-get install -y apt-transport-https curl
+    curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+
+    cat <<EOF | sudo tee /etc/apt/sources.list.d/kubernetes.list
+deb https://apt.kubernetes.io/ kubernetes-xenial main
+EOF
+
+    sudo apt-get update
+    sudo apt-get install -y kubelet kubeadm kubectl
 }
 
 install_docker()

@@ -593,7 +593,8 @@
       "secret": "**********",
       "redirectUris": [
         "http://localhost:12345/*",
-        "https://edge-cloud.com/*"
+        "https://edge-cloud.com/*",
+        "https://edgecloud.zapto.org/*"
       ],
       "webOrigins": [
         "*"

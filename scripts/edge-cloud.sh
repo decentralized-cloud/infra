@@ -109,6 +109,7 @@ function deploy_mongodb() {
         stable/mongodb \
         --set volumePermissions.enabled=true \
         --set usePassword=false \
+        --set persistence.enabled=false \
         -n edge \
         --wait
 }

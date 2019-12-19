@@ -8,50 +8,63 @@ cd "$current_directory"/..
 install_curl()
 {
     # install curl dependencies
-    apt-get install -y --allow-unauthenticated --no-install-recommends curl
+    sudo apt-get install \
+        -y \
+        --allow-unauthenticated \
+        --no-install-recommends \
+        curl
 }
 
 install_kubectl()
 {
     # TODO Pin kubectl version
     # Download and move kubectl into /usr/local/bin
-    curl -LO https://storage.googleapis.com/kubernetes-release/release/`curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt`/bin/linux/amd64/kubectl
+    kubectl_version=$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)
+    curl -LO https://storage.googleapis.com/kubernetes-release/release/"$kubectl_version"/bin/linux/amd64/kubectl
     chmod +x ./kubectl
-    mv ./kubectl /usr/local/bin/
+    sudo mv ./kubectl /usr/local/bin/
 }
 
 install_docker()
 {
     # install docker dependencies
-    apt-get install -y --allow-unauthenticated --no-install-recommends \
-    apt-transport-https \
-    ca-certificates \
-    software-properties-common
+    sudo apt-get install \
+        -y \
+        --allow-unauthenticated \
+        --no-install-recommends \
+        apt-transport-https \
+        ca-certificates \
+        software-properties-common
 
     # Install docker
-    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
 
     # TODO: 13/10/2019 - Morteza, we either use Linux Mint or Arch Linux as our development environment. For those using Linux Mint, following command
     # won't work. Instead of running "lsb_release -cs", we need to retrieve UBUNTU_CODENAME from /etc/os-release
-    add-apt-repository \
-    "deb https://download.docker.com/linux/ubuntu \
-    $(lsb_release -cs) \
-    stable"
+    sudo add-apt-repository \
+        "deb https://download.docker.com/linux/ubuntu \
+        $(lsb_release -cs) \
+        stable"
 
     # TODO Pin docker version
-    apt-get install -y --allow-unauthenticated docker-ce docker-ce-cli containerd.io
+    sudo apt-get install \
+        -y \
+        --allow-unauthenticated \
+        docker-ce \
+        docker-ce-cli \
+        containerd.io
 
     # This enables non-root user to run docker without sudo
-    groupadd docker || true # Ensure that docker group is created
-    usermod -aG docker "$USER"
-    chmod 666 /var/run/docker.sock
+    sudo groupadd docker || true # Ensure that docker group is created
+    sudo usermod -aG docker "$USER"
+    sudo chmod 666 /var/run/docker.sock
 }
 
 install_go()
 {
     curl -Lo go.tar.gz https://dl.google.com/go/go1.13.5.linux-amd64.tar.gz
-    rm -rf /usr/local/go
-    tar -C /usr/local -xzf go.tar.gz
+    sudo rm -rf /usr/local/go
+    sudo tar -C /usr/local -xzf go.tar.gz
     rm go.tar.gz
 
     echo "Make sure you add /usr/local/go to your PATH and set your GOPATH environment variable correctly"
@@ -61,15 +74,15 @@ install_kind()
 {
     curl -Lo ./kind https://github.com/kubernetes-sigs/kind/releases/download/v0.6.1/kind-linux-amd64
     chmod +x ./kind
-    mv -f ./kind /usr/local/bin/ # Overwrite previous version
+    sudo mv -f ./kind /usr/local/bin/ # Overwrite previous version
 }
 
 install_helm()
 {
-    curl -Lo ./helm.tar.gz https://get.helm.sh/helm-v3.0.1-linux-amd64.tar.gz
+    curl -Lo ./helm.tar.gz https://get.helm.sh/helm-v3.0.2-linux-amd64.tar.gz
     mkdir ./helm
     tar -C ./helm -xzf helm.tar.gz
-    mv -f ./helm/linux-amd64/helm /usr/local/bin/ # Overwrite previous version
+    sudo mv -f ./helm/linux-amd64/helm /usr/local/bin/ # Overwrite previous version
     rm -rf ./helm
     rm -rf helm.tar.gz
 }
@@ -77,8 +90,13 @@ install_helm()
 install_istioctl()
 {
     curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.4.2  sh -
-    mv -f istio-1.4.2/bin/istioctl /usr/local/bin/ # Overwrite previous version
+    sudo mv -f istio-1.4.2/bin/istioctl /usr/local/bin/ # Overwrite previous version
     rm -rf istio-1.4.2
+}
+
+install_jq()
+{
+    sudo apt-get install jq -y
 }
 
 add_helm_repos()
@@ -104,15 +122,15 @@ add_helm_repos()
 ##############
 
 # Ensure that this bootstrap is running on an Ubuntu machine
-if ! grep -i ubuntu < /etc/os-release; then
-    echo "This bootstrap was made for Ubuntu machines only. Please manually install the dependencies."
+if ! grep -i 'ubuntu\|debian' < /etc/os-release; then
+    echo "This bootstrap was made for Ubuntu/Debian machines only. Please manually install the dependencies."
     exit 1
 fi
 
-#apt-get update -y && apt-get install jq -y
+sudo apt-get update -y
 
-# List of dependencies that are required to deploy a K8s cluster locally with KIND
-readonly dependencies="curl kubectl docker go kind helm istioctl"
+# List of dependencies that are required by the edge-cloud infra for different use cases
+readonly dependencies="curl kubectl docker go kind helm istioctl jq"
 
 force=false
 
@@ -126,7 +144,7 @@ for dep in $dependencies; do
         install_"$dep"
         echo "Finished installing $dep"
     elif [ $force = true ]; then
-        if [[ "helm istioctl kind" == *"$dep"* ]]; then
+        if [[ "kubectl helm istioctl kind go" == *"$dep"* ]]; then
             echo "Force installing $dep"
             install_"$dep"
             echo "Finished installing $dep"
@@ -136,4 +154,4 @@ done
 
 add_helm_repos
 
-apt-get clean
+sudo apt-get clean

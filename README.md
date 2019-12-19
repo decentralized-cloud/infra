@@ -12,7 +12,7 @@ To deploy a K8s cluster locally, we require the following dependencies to be ins
 
 These dependencies can be installed by running the following command
 
-    sudo ./script/bootstrap.sh
+    ./script/bootstrap.sh
 
 \*NB: This bootstrap has been tailored for Ubuntu machines only. Bootstrap will fail if run on non-Ubuntu machines.
 

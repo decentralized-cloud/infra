@@ -132,7 +132,9 @@ function apply_edge_cloud_config() {
 function deploy_calico() {
     kubectl apply -f "$DEMO_SERVER_CALICO"
 }
-_local_demo_server
+
+function print_help() {
+    set +x
 
     echo -e "Usage: $1 [command]\n"
     echo "Available Commands:"

@@ -167,14 +167,14 @@ function deploy_keycloak() {
 
 function apply_edge_cloud_config() {
     # applying istio ingress related config
+    kubectl apply -n istio-system -f "$CERT_MANAGER_IDP_EDGE_CLOUD_CERTIFICATE_CONFIG"
     kubectl apply -n istio-system -f "$CERT_MANAGER_FRONTEND_EDGE_CLOUD_CERTIFICATE_CONFIG"
     kubectl apply -n istio-system -f "$CERT_MANAGER_API_EDGE_CLOUD_CERTIFICATE_CONFIG"
-    kubectl apply -n istio-system -f "$CERT_MANAGER_IDP_EDGE_CLOUD_CERTIFICATE_CONFIG"
 
     kubectl -n edge apply -f <(istioctl kube-inject -f "$ISTIO_GATEWAY_CONFIG")
+    kubectl -n edge apply -f <(istioctl kube-inject -f "$ISTIO_VIRTUALSERVICE_IDP_CONFIG")
     kubectl -n edge apply -f <(istioctl kube-inject -f "$ISTIO_VIRTUALSERVICE_FRONTEND_CONFIG")
     kubectl -n edge apply -f <(istioctl kube-inject -f "$ISTIO_VIRTUALSERVICE_API_CONFIG")
-    kubectl -n edge apply -f <(istioctl kube-inject -f "$ISTIO_VIRTUALSERVICE_IDP_CONFIG")
 }
 
 function deploy_calico() {
@@ -220,7 +220,6 @@ function start() {
     deploy_mongodb
 
     deploy_keycloak
-    apply_edge_cloud_config
 
     if [ "$ENVIRONMENT" = "" ] || [ "$ENVIRONMENT" = "LOCAL_KIND" ]; then
         echo "You need to make sure edge-cloud.com is added to your /etc/hosts file locally"
@@ -283,6 +282,8 @@ function deploy_services() {
     done
 
     deploy_frontend_service "$EDGE_CLOUD_SERVICES_CONFIG"
+
+    apply_edge_cloud_config
 }
 
 function remove_services() {

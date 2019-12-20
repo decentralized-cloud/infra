@@ -10,8 +10,8 @@ cd "$current_directory"/..
 ISTIO_KIALI_SECRET_CONFIG=./config/common/istio/kiali_secret.yaml
 EDGE_CLOUD_SERVICES_CONFIG=./config/common/edge-cloud/services.json
 
-K8S_DASHBOARD_SERVICE_ACCOUNT_CONFIG=./config/common/8s-dashboard/service-account.json
-K8S_DASHBOARD_ROLE_CONFIG=./config/common/8s-dashboard/role.json
+K8S_DASHBOARD_SERVICE_ACCOUNT_CONFIG=./config/common/k8s-dashboard/service-account.json
+K8S_DASHBOARD_ROLE_CONFIG=./config/common/k8s-dashboard/role.json
 
 function set_local_variable() {
     if [ "$ENVIRONMENT" = "" ] || [ "$ENVIRONMENT" = "LOCAL_KIND" ]; then

@@ -132,7 +132,7 @@ function deploy_istio() {
             --set global.configValidation=false \
             --set global.proxy.accessLogFile="/dev/stdout" \
             --set mixer.telemetry.enabled=false \
-            --set prometheus.enabled=false \
+            --set prometheus.enabled=true \
             --set tracing.enabled=false \
             --set grafana.enabled=false \
             --set kiali.enabled=true \

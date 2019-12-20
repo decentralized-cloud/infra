@@ -123,10 +123,6 @@ function deploy_istio() {
             --set sidecarInjectorWebhook.rewriteAppHTTPProbe=true \
             -n istio-system \
             --wait
-
-        # deploying Kiali dashboard
-        kubectl apply -f "$ISTIO_KIALI_SECRET_CONFIG"
-        echo "Enter 'istioctl dashboard kiali' to access kiali dashboard"
     else
         helm install istio \
             istio.io/istio \
@@ -139,13 +135,17 @@ function deploy_istio() {
             --set prometheus.enabled=false \
             --set tracing.enabled=false \
             --set grafana.enabled=false \
-            --set kiali.enabled=false \
+            --set kiali.enabled=true \
             --set gateways.istio-ingressgateway.sds.enabled=true \
             --set gateways.istio-egressgateway.enabled=true \
             --set sidecarInjectorWebhook.rewriteAppHTTPProbe=true \
             -n istio-system \
             --wait
     fi
+
+    # deploying Kiali dashboard
+    kubectl apply -f "$ISTIO_KIALI_SECRET_CONFIG"
+    echo "Enter 'istioctl dashboard kiali' to access kiali dashboard"
 }
 
 function deploy_mongodb() {

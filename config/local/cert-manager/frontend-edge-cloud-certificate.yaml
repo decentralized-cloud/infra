@@ -9,6 +9,6 @@
       - edge-cloud.com
     issuerRef: 
       kind: ClusterIssuer
-      name: self-signed-ca-cluster-issuer
+      name: self-signed-ca-clusterissuer
     secretName: edge-cloud-com-tls
   

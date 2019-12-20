@@ -8,6 +8,6 @@ spec:
     - idp-edgecloud.zapto.org
   issuerRef:
     kind: ClusterIssuer
-    name: letsencrypt-staging-cluster-issuer
+    name: letsencrypt-staging-clusterissuer
   secretName: idp-edgecloud-zapto-org-tls
 

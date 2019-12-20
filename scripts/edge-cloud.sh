@@ -89,19 +89,58 @@ function deploy_cert_manager() {
 }
 
 function deploy_istio() {
-    istioctl manifest apply \
-        --set values.global.mtls.enabled=true \
-        --set values.global.controlPlaneSecurityEnabled=true \
-        --set values.gateways.istio-ingressgateway.enabled=true \
-        --set values.gateways.istio-ingressgateway.sds.enabled=true \
-        --set values.gateways.istio-egressgateway.enabled=true \
-        --set values.kiali.enabled=true \
-        --set values.global.proxy.accessLogFile="/dev/stdout" \
-        --set values.sidecarInjectorWebhook.rewriteAppHTTPProbe=true
+    kubectl create namespace istio-system
 
-    # deploying Kiali dashboard
-    kubectl apply -f "$ISTIO_KIALI_SECRET_CONFIG"
-    echo "Enter 'istioctl dashboard kiali' to access kiali dashboard"
+    helm install istio-init \
+        istio.io/istio-init \
+        --set app-version="1.4.2" \
+        -n istio-system \
+        --wait
+
+    kubectl wait \
+        --for=condition=complete \
+        job/istio-init-crd-10-1.4.2 \
+        job/istio-init-crd-11-1.4.2 \
+        job/istio-init-crd-14-1.4.2  \
+        -n istio-system
+
+    if [ "$local_demo_server_deployment" = false ]; then
+        helm install istio \
+            istio.io/istio \
+            --set app-version="1.4.2" \
+            --set global.mtls.enabled=true \
+            --set global.controlPlaneSecurityEnabled=true \
+            --set global.configValidation=false \
+            --set global.proxy.accessLogFile="/dev/stdout" \
+            --set kiali.enabled=true \
+            --set gateways.istio-ingressgateway.sds.enabled=true \
+            --set gateways.istio-egressgateway.enabled=true \
+            --set sidecarInjectorWebhook.rewriteAppHTTPProbe=true \
+            -n istio-system \
+            --wait
+
+        # deploying Kiali dashboard
+        kubectl apply -f "$ISTIO_KIALI_SECRET_CONFIG"
+        echo "Enter 'istioctl dashboard kiali' to access kiali dashboard"
+    else
+        helm install istio \
+            istio.io/istio \
+            --set app-version="1.4.2" \
+            --set global.mtls.enabled=true \
+            --set global.controlPlaneSecurityEnabled=true \
+            --set global.configValidation=false \
+            --set global.proxy.accessLogFile="/dev/stdout" \
+            --set mixer.telemetry.enabled=false \
+            --set prometheus.enabled=false \
+            --set tracing.enabled=false \
+            --set grafana.enabled=false \
+            --set kiali.enabled=false \
+            --set gateways.istio-ingressgateway.sds.enabled=true \
+            --set gateways.istio-egressgateway.enabled=true \
+            --set sidecarInjectorWebhook.rewriteAppHTTPProbe=true \
+            -n istio-system \
+            --wait
+    fi
 }
 
 function deploy_mongodb() {

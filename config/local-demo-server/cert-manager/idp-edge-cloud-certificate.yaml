@@ -9,7 +9,7 @@ spec:
   issuerRef:
     kind: ClusterIssuer
     name: letsencrypt
-  secretName: idp-edgecloud-zapto-org-tls
+  secretName: idp-edgecloud-zapto-org
   acme:
     config:
     - http01:

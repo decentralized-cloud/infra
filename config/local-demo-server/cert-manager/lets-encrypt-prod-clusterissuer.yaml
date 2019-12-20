@@ -7,7 +7,7 @@ spec:
     email: morteza.alizadeh@gmail.com
     server: 'https://acme-v02.api.letsencrypt.org/directory'
     privateKeySecretRef:
-      name: edge-cloud-clusterissuer-private-key
+      name: letsencrypt-prod-clusterissuer
     solvers:
       -
         http01:

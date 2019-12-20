@@ -41,9 +41,8 @@ function set_local_variable() {
         METALLB_CONFIG=./config/local-demo-server/metallb_config.yaml
 
         # cert-manager
-        CERT_MANAGER_KEYPAIR_FILE_PATH=./certificates/ca.key
-        CERT_MANAGER_CERTIFICATE_FILE_PATH=./certificates/ca.crt
-        CERT_MANAGER_SELF_SIGNING_CLUSTER_ISSUER_CONFIG=./config/local-demo-server/cert-manager/self-signing-clusterissuer.yaml
+        CERT_MANAGER_LETS_ENCRYPT_STAGING_CLUSTER_ISSUER_CONFIG=./config/local-demo-server/cert-manager/lets-encrypt-staging-clusterissuer.yaml
+        CERT_MANAGER_LETS_ENCRYPT_PROD_CLUSTER_ISSUER_CONFIG=./config/local-demo-server/cert-manager/lets-encrypt-prod-clusterissuer.yaml
         CERT_MANAGER_FRONTEND_EDGE_CLOUD_CERTIFICATE_CONFIG=./config/local-demo-server/cert-manager/frontend-edge-cloud-certificate.yaml
         CERT_MANAGER_API_EDGE_CLOUD_CERTIFICATE_CONFIG=./config/local-demo-server/cert-manager/api-edge-cloud-certificate.yaml
         CERT_MANAGER_IDP_EDGE_CLOUD_CERTIFICATE_CONFIG=./config/local-demo-server/cert-manager/idp-edge-cloud-certificate.yaml
@@ -84,8 +83,14 @@ function deploy_cert_manager() {
         --version v0.12.0 \
         -n cert-manager \
         --wait
-    kubectl create secret tls ca-key-pair --key="$CERT_MANAGER_KEYPAIR_FILE_PATH" --cert="$CERT_MANAGER_CERTIFICATE_FILE_PATH" -n cert-manager
-    kubectl apply -n cert-manager -f "$CERT_MANAGER_SELF_SIGNING_CLUSTER_ISSUER_CONFIG"
+
+    if [ "$ENVIRONMENT" = "" ] || [ "$ENVIRONMENT" = "LOCAL_KIND" ]; then
+        kubectl create secret tls ca-key-pair --key="$CERT_MANAGER_KEYPAIR_FILE_PATH" --cert="$CERT_MANAGER_CERTIFICATE_FILE_PATH" -n cert-manager
+        kubectl apply -n cert-manager -f "$CERT_MANAGER_SELF_SIGNING_CLUSTER_ISSUER_CONFIG"
+    else
+        kubectl apply -n cert-manager -f "$CERT_MANAGER_LETS_ENCRYPT_STAGING_CLUSTER_ISSUER_CONFIG"
+        kubectl apply -n cert-manager -f "$CERT_MANAGER_LETS_ENCRYPT_PROD_CLUSTER_ISSUER_CONFIG"
+    fi
 }
 
 function deploy_istio() {

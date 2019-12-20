@@ -10,5 +10,5 @@
     issuerRef: 
       kind: ClusterIssuer
       name: self-signed-ca-cluster-issuer
-    secretName: idp-edge-cloud-com
+    secretName: idp-edge-cloud-com-tls
   

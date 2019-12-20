@@ -9,5 +9,5 @@ spec:
   issuerRef:
     kind: ClusterIssuer
     name: letsencrypt-staging-clusterissuer
-  secretName: api-edgecloud-zapto-org
+  secretName: api-edgecloud-zapto-org-tls
 

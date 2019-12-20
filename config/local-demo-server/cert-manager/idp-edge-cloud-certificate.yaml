@@ -1,4 +1,4 @@
-apiVersion: cert-manager.io/v1alpha2
+apiVersion: certmanager.k8s.io/v1alpha1
 kind: Certificate
 metadata:
   name: idp-edgecloud-zapto-org
@@ -8,6 +8,12 @@ spec:
     - idp-edgecloud.zapto.org
   issuerRef:
     kind: ClusterIssuer
-    name: letsencrypt-staging-clusterissuer
+    name: letsencrypt-staging
   secretName: idp-edgecloud-zapto-org-tls
+  acme:
+    config:
+    - http01:
+        ingressClass: istio
+      domains:
+      - idp-edgecloud.zapto.org
 

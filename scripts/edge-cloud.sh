@@ -10,6 +10,9 @@ cd "$current_directory"/..
 ISTIO_KIALI_SECRET_CONFIG=./config/common/istio/kiali_secret.yaml
 EDGE_CLOUD_SERVICES_CONFIG=./config/common/edge-cloud/services.json
 
+K8S_DASHBOARD_SERVICE_ACCOUNT_CONFIG=./config/common/8s-dashboard/service-account.json
+K8S_DASHBOARD_ROLE_CONFIG=./config/common/8s-dashboard/role.json
+
 function set_local_variable() {
     if [ "$ENVIRONMENT" = "" ] || [ "$ENVIRONMENT" = "LOCAL_KIND" ]; then
         KIND_CONFIG="${KIND_CONFIG:-./config/local/kind_config.yaml}"
@@ -64,7 +67,7 @@ function create_and_configure_edge_namespace() {
     kubectl label namespace edge istio-injection=enabled # labeling the edge namespace to enable automatic istio sidecar injection
 }
 
-function deploy_helm() {
+function deploy_metallb() {
     kubectl create namespace metallb-system
     helm install metallb \
         stable/metallb \
@@ -75,9 +78,16 @@ function deploy_helm() {
     kubectl apply -f "$METALLB_CONFIG" -n metallb-system
 }
 
+function deploy_kubernetes_dashboard() {
+    kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0-beta8/aio/deploy/recommended.yaml
+    kubectl apply -f "$K8S_DASHBOARD_SERVICE_ACCOUNT_CONFIG"
+    kubectl apply -f "$K8S_DASHBOARD_ROLE_CONFIG"
+}
+
 function deploy_cert_manager() {
     kubectl apply -f https://raw.githubusercontent.com/jetstack/cert-manager/release-0.12/deploy/manifests/00-crds.yaml
     kubectl create namespace cert-manager
+
     helm install cert-manager \
         jetstack/cert-manager \
         --version v0.12.0 \
@@ -109,6 +119,8 @@ function deploy_istio() {
         job/istio-init-crd-14-1.4.2  \
         -n istio-system
 
+    kubectl apply -f https://raw.githubusercontent.com/jetstack/cert-manager/release-0.6/deploy/manifests/00-crds.yaml
+
     if [ "$ENVIRONMENT" = "" ] || [ "$ENVIRONMENT" = "LOCAL_KIND" ]; then
         helm install istio \
             istio.io/istio \
@@ -118,6 +130,7 @@ function deploy_istio() {
             --set global.configValidation=false \
             --set global.proxy.accessLogFile="/dev/stdout" \
             --set kiali.enabled=true \
+            --set certmanager.enabled=true \
             --set gateways.istio-ingressgateway.sds.enabled=true \
             --set gateways.istio-egressgateway.enabled=true \
             --set sidecarInjectorWebhook.rewriteAppHTTPProbe=true \
@@ -132,6 +145,7 @@ function deploy_istio() {
             --set global.configValidation=false \
             --set global.proxy.accessLogFile="/dev/stdout" \
             --set kiali.enabled=true \
+            --set certmanager.enabled=true \
             --set gateways.istio-ingressgateway.sds.enabled=true \
             --set gateways.istio-egressgateway.enabled=true \
             --set sidecarInjectorWebhook.rewriteAppHTTPProbe=true \
@@ -212,8 +226,9 @@ function start() {
     fi
 
     create_and_configure_edge_namespace
-    deploy_helm
-    deploy_cert_manager
+    deploy_metallb
+    deploy_kubernetes_dashboard
+    # deploy_cert_manager
     deploy_istio
 
     # deploying mongodb, make sure you deploy after istio deployment is done, so it inject sidecar for mongodb

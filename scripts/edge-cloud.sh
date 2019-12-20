@@ -131,14 +131,11 @@ function deploy_istio() {
             --set global.controlPlaneSecurityEnabled=true \
             --set global.configValidation=false \
             --set global.proxy.accessLogFile="/dev/stdout" \
-            --set mixer.telemetry.enabled=false \
-            --set prometheus.enabled=true \
-            --set tracing.enabled=false \
-            --set grafana.enabled=false \
             --set kiali.enabled=true \
             --set gateways.istio-ingressgateway.sds.enabled=true \
             --set gateways.istio-egressgateway.enabled=true \
             --set sidecarInjectorWebhook.rewriteAppHTTPProbe=true \
+            --set mixer.telemetry.enabled=false \
             -n istio-system \
             --wait
     fi

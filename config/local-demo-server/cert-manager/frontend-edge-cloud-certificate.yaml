@@ -1,14 +1,13 @@
---- 
-  apiVersion: cert-manager.io/v1alpha2
-  kind: Certificate
-  metadata: 
-    name: edgecloud-zapto-org
-  spec: 
-    commonName: edgecloud.zapto.org
-    dnsNames: 
-      - edgecloud.zapto.org
-    issuerRef: 
-      kind: ClusterIssuer
-      name: self-signed-ca-cluster-issuer
-    secretName: edgecloud-zapto-org
-  
+apiVersion: cert-manager.io/v1alpha2
+kind: Certificate
+metadata:
+  name: edgecloud-zapto-org
+spec:
+  commonName: edgecloud.zapto.org
+  dnsNames:
+    - edgecloud.zapto.org
+  issuerRef:
+    kind: ClusterIssuer
+    name: letsencrypt-staging-cluster-issuer
+  secretName: edgecloud-zapto-org
+

@@ -11,7 +11,7 @@ ISTIO_KIALI_SECRET_CONFIG=./config/common/istio/kiali_secret.yaml
 EDGE_CLOUD_SERVICES_CONFIG=./config/common/edge-cloud/services.json
 
 function set_local_variable() {
-    if [ "$local_demo_server_deployment" = false ]; then
+    if [ "$ENVIRONMENT" = "" ] || [ "$ENVIRONMENT" = "LOCAL_KIND" ]; then
         KIND_CONFIG="${KIND_CONFIG:-./config/local/kind_config.yaml}"
 
         # metallb
@@ -104,7 +104,7 @@ function deploy_istio() {
         job/istio-init-crd-14-1.4.2  \
         -n istio-system
 
-    if [ "$local_demo_server_deployment" = false ]; then
+    if [ "$ENVIRONMENT" = "" ] || [ "$ENVIRONMENT" = "LOCAL_KIND" ]; then
         helm install istio \
             istio.io/istio \
             --set app-version="1.4.2" \
@@ -185,10 +185,8 @@ function print_help() {
     echo -e "Usage: $1 [command]\n"
     echo "Available Commands:"
     echo -e "\t generate_local_self_signed_certificate \n\t\t Generate new set of local self-signed certificates"
-    echo -e "\t start \n\t\t Start local Kind K8s cluster"
-    echo -e "\t stop \n\t\t Stop local Kind K8s cluster"
-    echo -e "\t start_local_demo_server \n\t\t Start local demo server K8s cluster"
-    echo -e "\t stop_local_demo_server \n\t\t Stop local demo server K8s cluster"
+    echo -e "\t start \n\t\t Start K8s cluster"
+    echo -e "\t stop \n\t\t Stop K8s cluster"
     echo -e "\t deploy_services <config config_path>\n\t\t Deploy all edge services"
     echo -e "\t remove_services \n\t\t Remove all edge services"
 }
@@ -198,10 +196,18 @@ function generate_local_self_signed_certificate() {
 }
 
 function start() {
-    local_demo_server_deployment=false
-    set_local_variable
+    if [ "$ENVIRONMENT" = "" ] || [ "$ENVIRONMENT" = "LOCAL_KIND" ]; then
+        kind create cluster --config "$KIND_CONFIG" --wait 5m # Block until control plane is ready
+    else
+        sudo kubeadm init --pod-network-cidr=172.16.0.0/16 --apiserver-advertise-address=192.168.1.3
 
-    kind create cluster --config "$KIND_CONFIG" --wait 5m # Block until control plane is ready
+        mkdir -p "$HOME"/.kube
+        sudo cp /etc/kubernetes/admin.conf "$HOME"/.kube/config
+        sudo chown "$(id -u)":"$(id -g)" "$HOME"/.kube/config
+
+        kubectl taint nodes --all node-role.kubernetes.io/master-
+        kubectl apply -f "$CALICO"
+    fi
 
     create_and_configure_edge_namespace
     deploy_helm
@@ -214,43 +220,20 @@ function start() {
     deploy_keycloak
     apply_edge_cloud_config
 
-    echo "You need to make sure edge-cloud.com is added to your /etc/hosts file locally"
-    echo "If you are using kind, you most likely got 172.17.255.1 as its IP address"
-    echo "Add following line to your /etc/hosts file:"
-    echo "172.17.255.1 edge-cloud.com"
+    if [ "$ENVIRONMENT" = "" ] || [ "$ENVIRONMENT" = "LOCAL_KIND" ]; then
+        echo "You need to make sure edge-cloud.com is added to your /etc/hosts file locally"
+        echo "If you are using kind, you most likely got 172.17.255.1 as its IP address"
+        echo "Add following line to your /etc/hosts file:"
+        echo "172.17.255.1 edge-cloud.com"
+    fi
 }
 
 function stop() {
-    kind delete cluster
-}
-
-function start_local_demo_server() {
-    local_demo_server_deployment=true
-    set_local_variable
-
-    sudo kubeadm init --pod-network-cidr=172.16.0.0/16 --apiserver-advertise-address=192.168.1.3
-
-    mkdir -p "$HOME"/.kube
-    sudo cp /etc/kubernetes/admin.conf "$HOME"/.kube/config
-    sudo chown "$(id -u)":"$(id -g)" "$HOME"/.kube/config
-
-    kubectl taint nodes --all node-role.kubernetes.io/master-
-    kubectl apply -f "$CALICO"
-
-    create_and_configure_edge_namespace
-    deploy_helm
-    deploy_cert_manager
-    deploy_istio
-
-    # deploying mongodb, make sure you deploy after istio deployment is done, so it inject sidecar for mongodb
-    deploy_mongodb
-
-    deploy_keycloak
-    apply_edge_cloud_config
-}
-
-function stop_local_demo_server() {
-    sudo kubeadm reset
+    if [ "$ENVIRONMENT" = "" ] || [ "$ENVIRONMENT" = "LOCAL_KIND" ]; then
+        kind delete cluster
+    else
+        sudo kubeadm reset
+    fi
 }
 
 readonly EDGE_SERVICES="tenant api-gateway edge-cluster"
@@ -311,14 +294,24 @@ function remove_services() {
 function deploy_a_service() {
     helm_chart_version="$(jq -r '."'"$2"'".helm_chart_version' < "$1")"
     app_version="$(jq -r '."'"$2"'".app_version' < "$1")"
+
     echo -e "\nInstalling helm chart for $2 helm_chart_version=$helm_chart_version app_version=$app_version\n"
-    helm install "$2" decentralized-cloud/"$2" -n edge --version "$helm_chart_version" --set app-version="$app_version" --set image.pullPolicy="Always" --wait
+
+    helm install "$2" \
+        decentralized-cloud/"$2" \
+        -n edge \
+        --version "$helm_chart_version" \
+        --set app-version="$app_version" \
+        --set image.pullPolicy="Always" \
+        --wait
 }
 
 function deploy_frontend_service() {
     helm_chart_version="$(jq -r '."'"frontend"'".helm_chart_version' < "$1")"
     app_version="$(jq -r '."'"frontend"'".app_version' < "$1")"
+
     echo -e "\nInstalling helm chart for frontend helm_chart_version=$helm_chart_version app_version=$app_version\n"
+
     helm install "frontend" decentralized-cloud/"frontend" \
         -n edge \
         --version "$helm_chart_version" \
@@ -330,10 +323,15 @@ function deploy_frontend_service() {
         --wait
 }
 
-local_demo_server_deployment=false
+if [ "$ENVIRONMENT" != "" ] && [ "$ENVIRONMENT" != "LOCAL_KIND" ] && [ "$ENVIRONMENT" != "LOCAL_DEMO_SERVER" ]; then
+    echo "Provided environment not supported: $ENVIRONMENT"
+    exit 0
+fi
+
+set_local_variable
 
 case $1 in
-    generate_local_self_signed_certificate|start|stop|start_local_demo_server|stop_local_demo_server|remove_services) "$1" ;;
+    generate_local_self_signed_certificate|start|stop|remove_services) "$1" ;;
     deploy_services) "$1" "${@:2}" ;;
     *) print_help "$0" ;;
 esac

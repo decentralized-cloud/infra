@@ -6,11 +6,11 @@ metadata:
 spec:
   acme:
     email: morteza.alizadeh@gmail.com
-    server: https://acme-v02.api.letsencrypt.org/directory
+    server: 'https://acme-v02.api.letsencrypt.org/directory'
     privateKeySecretRef:
       name: edge-cloud-clusterissuer-account-key
     solvers:
-      - selector: {}
+      -
         http01:
           ingress:
             class: istio
@@ -31,7 +31,7 @@ spec:
     privateKeySecretRef:
       name: edge-cloud-staging-clusterissuer-account-key
     solvers:
-      - selector: {}
+      -
         http01:
           ingress:
             class: istio

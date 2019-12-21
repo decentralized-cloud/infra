@@ -2,7 +2,6 @@ apiVersion: cert-manager.io/v1alpha2
 kind: Certificate
 metadata:
   name: edgecloud-zapto-org
-  namespace: istio-system
 spec:
   secretName: edgecloud-zapto-org
   issuerRef:
@@ -11,5 +10,29 @@ spec:
   commonName: edgecloud.zapto.org
   dnsNames:
     - edgecloud.zapto.org
+---
+apiVersion: cert-manager.io/v1alpha2
+kind: Certificate
+metadata:
+  name: api-edgecloud-zapto-org
+spec:
+  secretName: api-edgecloud-zapto-org
+  issuerRef:
+    kind: ClusterIssuer
+    name: letsencrypt-staging
+  commonName: api-edgecloud.zapto.org
+  dnsNames:
     - api-edgecloud.zapto.org
+---
+apiVersion: cert-manager.io/v1alpha2
+kind: Certificate
+metadata:
+  name: idp-edgecloud-zapto-org
+spec:
+  secretName: idp-edgecloud-zapto-org
+  issuerRef:
+    kind: ClusterIssuer
+    name: letsencrypt-staging
+  commonName: idp-edgecloud.zapto.org
+  dnsNames:
     - idp-edgecloud.zapto.org

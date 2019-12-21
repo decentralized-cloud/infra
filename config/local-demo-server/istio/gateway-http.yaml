@@ -1,0 +1,31 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: edge-cloud-gateway-http
+  labels:
+    app: ingressgateway
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+    -
+      hosts:
+        - edgecloud.zapto.org
+      port:
+        number: 80
+        protocol: HTTP2
+        name: http
+    -
+      hosts:
+        - api-edgecloud.zapto.org
+      port:
+        number: 80
+        protocol: HTTP2
+        name: http
+    -
+      hosts:
+        - idp-edgecloud.zapto.org
+      port:
+        number: 80
+        protocol: HTTP2
+        name: http

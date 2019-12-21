@@ -1,13 +1,12 @@
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
-  name: frontend-edge-cloud
-  namespace: edge
+  name: frontend-edge-cloud-http
 spec:
   hosts:
     - edgecloud.zapto.org
   gateways:
-    - istio-system/edge-cloud-gateway
+    - edge-cloud-gateway-http
   http:
     -
       match:
@@ -20,22 +19,21 @@ spec:
           destination:
             host: frontend.edge.svc.cluster.local
             port:
-              number: 80
+              number: 8089
 ---
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
-  name: api-edge-cloud
-  namespace: edge
+  name: api-edge-cloud-http
 spec:
   hosts:
     - api-edgecloud.zapto.org
   gateways:
-    - istio-system/edge-cloud-gateway
+    - edge-cloud-gateway-http
   http:
     -
       match:
-        -
+        -`
           uri:
             prefix: /
       ignoreUriCase: true
@@ -44,18 +42,17 @@ spec:
           destination:
             host: api-gateway.edge.svc.cluster.local
             port:
-              number: 80
+              number: 8089
 ---
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
-  name: idp-edge-cloud
-  namespace: edge
+  name: idp-edge-cloud-http
 spec:
   hosts:
     - idp-edgecloud.zapto.org
   gateways:
-    - istio-system/edge-cloud-gateway
+    - edge-cloud-gateway-http
   http:
     -
       match:
@@ -68,4 +65,4 @@ spec:
           destination:
             host: keycloak-http.edge.svc.cluster.local
             port:
-              number: 80
+              number: 8089

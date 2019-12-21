@@ -2,7 +2,6 @@ apiVersion: cert-manager.io/v1alpha2
 kind: ClusterIssuer
 metadata:
   name: letsencrypt
-  namespace: istio-system
 spec:
   acme:
     email: morteza.alizadeh@gmail.com
@@ -19,7 +18,6 @@ apiVersion: cert-manager.io/v1alpha2
 kind: ClusterIssuer
 metadata:
   name: letsencrypt-staging
-  namespace: istio-system
 spec:
   acme:
     email: morteza.alizadeh@gmail.com

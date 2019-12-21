@@ -34,20 +34,20 @@ function set_local_variable() {
         EDGE_CLOUD_API_GATEWAY_URL="https://api.edge-cloud.com/graphql"
         EDGE_CLOUD_IDP_URL="https://idp.edge-cloud.com/auth/realms/master"
     else
-        CALICO=./config/local-demo-server/calico.yaml
+        DEMO_SERVER_CALICO=./config/local-demo-server/calico.yaml
 
         # metallb
         METALLB_CONFIG=./config/local-demo-server/metallb_config.yaml
 
         # cert-manager
-        CERT_MANAGER_LETS_ENCRYPT_CLUSTER_ISSUER_CONFIG=./config/local-demo-server/istio/letsencrypt-clusterissuer.yaml
+        CERT_MANAGER_LETSENCRYPT_CLUSTER_ISSUER_CONFIG=./config/local-demo-server/istio/letsencrypt-clusterissuer.yaml
 
         # istio
         ISTIO_CERTIFICATES_CONFIG=./config/local-demo-server/istio/certificates.yaml
-        ISTIO_GATEWAY_CONFIG=./config/local-demo-server/istio/gateway.yaml
-        ISTIO_VIRTUALSERVICES_CONFIG=./config/local-demo-server/istio/virtualservices.yaml
-        ISTIO_REDIRECT_DEPLOYMENT_CONFIG=./config/local-demo-server/istio/redirect-deployment.yaml
-        ISTIO_REDIRECT_VIRTUALSERVICES_CONFIG=./config/local-demo-server/istio/redirect-virtualservice.yaml
+        ISTIO_GATEWAY_HTTP_CONFIG=./config/local-demo-server/istio/gateway-http.yaml
+        ISTIO_GATEWAY_HTTPS_CONFIG=./config/local-demo-server/istio/gateway-https.yaml
+        ISTIO_VIRTUALSERVICES_HTTP_CONFIG=./config/local-demo-server/istio/virtualservices-http.yaml
+        ISTIO_VIRTUALSERVICES_HTTPS_CONFIG=./config/local-demo-server/istio/virtualservices-https.yaml
 
         # edge-cloud
         EDGE_CLOUD_API_GATEWAY_URL="https://api-edgecloud.zapto.org/graphql"
@@ -64,9 +64,10 @@ function create_and_configure_namespaces() {
 
     kubectl create namespace edge
     kubectl label namespace edge istio-injection=enabled
+}
 
-    kubectl create namespace redirect
-    kubectl label namespace redirect istio-injection=enabled
+function deploy_calico() {
+    kubectl apply -f "$DEMO_SERVER_CALICO"
 }
 
 function deploy_metallb() {
@@ -83,6 +84,22 @@ function deploy_kubernetes_dashboard() {
     kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0-beta8/aio/deploy/recommended.yaml
     kubectl apply -f "$K8S_DASHBOARD_SERVICE_ACCOUNT_CONFIG"
     kubectl apply -f "$K8S_DASHBOARD_ROLE_CONFIG"
+}
+
+function deploy_cert_manager() {
+    kubectl apply -f https://raw.githubusercontent.com/jetstack/cert-manager/release-0.12/deploy/manifests/00-crds.yaml
+    helm install cert-manager \
+        jetstack/cert-manager \
+        --version v0.12.0 \
+        -n cert-manager \
+        --wait
+
+    if [ "$ENVIRONMENT" = "" ] || [ "$ENVIRONMENT" = "LOCAL_KIND" ]; then
+        kubectl create -n cert-manager secret tls ca-key-pair --key="$CERT_MANAGER_KEYPAIR_FILE_PATH" --cert="$CERT_MANAGER_CERTIFICATE_FILE_PATH"
+        kubectl apply -n cert-manager -f "$CERT_MANAGER_SELF_SIGNING_CLUSTER_ISSUER_CONFIG"
+    else
+        kubectl apply -n cert-manager -f "$CERT_MANAGER_LETSENCRYPT_CLUSTER_ISSUER_CONFIG"
+    fi
 }
 
 function deploy_istio() {
@@ -135,22 +152,6 @@ function deploy_istio() {
     echo "Enter 'istioctl dashboard kiali' to access kiali dashboard"
 }
 
-function deploy_cert_manager() {
-    kubectl apply -f https://raw.githubusercontent.com/jetstack/cert-manager/release-0.12/deploy/manifests/00-crds.yaml
-    helm install cert-manager \
-        jetstack/cert-manager \
-        --version v0.12.0 \
-        -n cert-manager \
-        --wait
-
-    if [ "$ENVIRONMENT" = "" ] || [ "$ENVIRONMENT" = "LOCAL_KIND" ]; then
-        kubectl create -n cert-manager secret tls ca-key-pair --key="$CERT_MANAGER_KEYPAIR_FILE_PATH" --cert="$CERT_MANAGER_CERTIFICATE_FILE_PATH"
-        kubectl apply -n cert-manager -f "$CERT_MANAGER_SELF_SIGNING_CLUSTER_ISSUER_CONFIG"
-    else
-        kubectl apply -n istio-system -f "$CERT_MANAGER_LETS_ENCRYPT_CLUSTER_ISSUER_CONFIG"
-    fi
-}
-
 function deploy_mongodb() {
     helm install mongodb \
         stable/mongodb \
@@ -173,20 +174,14 @@ function deploy_keycloak() {
 
 function apply_edge_cloud_config() {
     kubectl apply -n istio-system -f "$ISTIO_CERTIFICATES_CONFIG"
-    kubectl apply -n istio-system -f "$ISTIO_GATEWAY_CONFIG"
-    kubectl apply -n edge -f "$ISTIO_VIRTUALSERVICES_CONFIG"
-    kubectl apply -n redirect -f "$ISTIO_REDIRECT_DEPLOYMENT_CONFIG"
-    kubectl apply -n redirect -f "$ISTIO_REDIRECT_VIRTUALSERVICES_CONFIG"
 
-    # applying istio ingress related config
-    # kubectl -n edge apply -f "$ISTIO_CERTIFICATES_CONFIG"
+    if [ "$ENVIRONMENT" = "LOCAL_DEMO_SERVER" ]; then
+        kubectl -n edge apply -f <(istioctl kube-inject -f "$ISTIO_GATEWAY_HTTP_CONFIG")
+        kubectl -n edge apply -f <(istioctl kube-inject -f "$ISTIO_VIRTUALSERVICES_HTTP_CONFIG")
+    fi
 
-    # kubectl -n edge apply -f <(istioctl kube-inject -f "$ISTIO_GATEWAY_CONFIG")
-    # kubectl -n edge apply -f <(istioctl kube-inject -f "$ISTIO_VIRTUALSERVICES_CONFIG")
-}
-
-function deploy_calico() {
-    kubectl apply -f "$DEMO_SERVER_CALICO"
+    kubectl -n edge apply -f <(istioctl kube-inject -f "$ISTIO_GATEWAY_HTTPS_CONFIG")
+    kubectl -n edge apply -f <(istioctl kube-inject -f "$ISTIO_VIRTUALSERVICES_HTTPS_CONFIG")
 }
 
 function print_help() {
@@ -216,19 +211,20 @@ function start() {
         sudo chown "$(id -u)":"$(id -g)" "$HOME"/.kube/config
 
         kubectl taint nodes --all node-role.kubernetes.io/master-
-        kubectl apply -f "$CALICO"
+        deploy_calico
     fi
 
     create_and_configure_namespaces
     deploy_metallb
     deploy_kubernetes_dashboard
-    deploy_istio
     deploy_cert_manager
+    deploy_istio
 
     # deploying mongodb, make sure you deploy after istio deployment is done, so it inject sidecar for mongodb
     deploy_mongodb
 
     deploy_keycloak
+    apply_edge_cloud_config
 
     if [ "$ENVIRONMENT" = "" ] || [ "$ENVIRONMENT" = "LOCAL_KIND" ]; then
         echo "You need to make sure edge-cloud.com is added to your /etc/hosts file locally"
@@ -291,8 +287,6 @@ function deploy_services() {
     done
 
     deploy_frontend_service "$EDGE_CLOUD_SERVICES_CONFIG"
-
-    apply_edge_cloud_config
 }
 
 function remove_services() {

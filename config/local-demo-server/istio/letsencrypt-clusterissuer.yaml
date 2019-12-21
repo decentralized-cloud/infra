@@ -9,7 +9,15 @@ spec:
     server: https://acme-v02.api.letsencrypt.org/directory
     privateKeySecretRef:
       name: edge-cloud-clusterissuer-account-key
-    http01: {}
+    solvers:
+      - selector: {}
+        http01:
+          ingress:
+            class: istio
+        domains:
+          - edgecloud.zapto.org
+          - api-edgecloud.zapto.org
+          - idp-edgecloud.zapto.org
 ---
 apiVersion: cert-manager.io/v1alpha2
 kind: ClusterIssuer
@@ -22,4 +30,12 @@ spec:
     server: https://acme-staging-v02.api.letsencrypt.org/directory
     privateKeySecretRef:
       name: edge-cloud-staging-clusterissuer-account-key
-    http01: {}
+    solvers:
+      - selector: {}
+        http01:
+          ingress:
+            class: istio
+        domains:
+          - edgecloud.zapto.org
+          - api-edgecloud.zapto.org
+          - idp-edgecloud.zapto.org

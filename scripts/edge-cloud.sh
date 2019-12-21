@@ -61,7 +61,6 @@ function create_and_configure_namespaces() {
     kubectl create namespace istio-system
 
     kubectl create namespace cert-manager
-    kubectl label namespace cert-manager cert-manager.io/disable-validation=true
 
     kubectl create namespace edge
     kubectl label namespace edge istio-injection=enabled
@@ -148,7 +147,7 @@ function deploy_cert_manager() {
         kubectl create -n cert-manager secret tls ca-key-pair --key="$CERT_MANAGER_KEYPAIR_FILE_PATH" --cert="$CERT_MANAGER_CERTIFICATE_FILE_PATH"
         kubectl apply -n cert-manager -f "$CERT_MANAGER_SELF_SIGNING_CLUSTER_ISSUER_CONFIG"
     else
-        kubectl apply -n istio-system -f "$CERT_MANAGER_LETS_ENCRYPT_CLUSTER_ISSUER_CONFIG"
+        kubectl apply -n istio-system -f "$CERT_MANAGER_LETS_ENCRYPT_CLUSTER_ISSUER_CONFIG" --validate=false
     fi
 }
 

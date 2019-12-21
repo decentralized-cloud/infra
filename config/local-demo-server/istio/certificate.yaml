@@ -1,0 +1,24 @@
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: Certificate
+metadata:
+  name: edge-cloud-ingress-cert
+spec:
+  secretName: edge-cloud-ingress-cert
+  issuerRef:
+    name: letsencrypt
+    kind: ClusterIssuer
+  commonName: edgecloud.zapto.org
+  dnsNames:
+    - edgecloud.zapto.org
+    - api-edgecloud.zapto.org
+    - idp-edgecloud.zapto.org
+  acme:
+    config:
+      -
+        http01:
+          ingressClass: istio
+        domains:
+          - edgecloud.zapto.org
+          - api-edgecloud.zapto.org
+          - idp-edgecloud.zapto.org
+

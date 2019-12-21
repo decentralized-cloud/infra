@@ -1,0 +1,55 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: istio
+  name: edge-cloud-ingress
+spec:
+  rules:
+    -
+      host: edgecloud.zapto.org
+      http:
+        paths:
+          -
+            path: /
+            backend:
+              serviceName: frontend.edge.svc.cluster.local
+              servicePort: 80
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: istio
+  name: api-edge-cloud-ingress
+spec:
+  rules:
+    -
+      host: api-edgecloud.zapto.org
+      http:
+        paths:
+          -
+            path: /
+            backend:
+              serviceName: api-gateway.edge.svc.cluster.local
+              servicePort: 80
+
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: istio
+  name: idp-edge-cloud-ingress
+spec:
+  rules:
+    -
+      host: idp-edgecloud.zapto.org
+      http:
+        paths:
+          -
+            path: /
+            backend:
+              serviceName: keycloak-http.edge.svc.cluster.local
+              servicePort: 80
+

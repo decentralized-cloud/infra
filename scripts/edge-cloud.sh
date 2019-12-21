@@ -92,7 +92,12 @@ function deploy_cert_manager() {
         jetstack/cert-manager \
         --version v0.12.0 \
         -n cert-manager \
-        --waithttp://idp-edgecloud.zapto.org/.well-known/acme-challenge/yGPitcFtFQgWNFPce499i8i8B6ghg_lvKzuC0YtQ0-U
+        --wait
+
+    if [ "$ENVIRONMENT" = "" ] || [ "$ENVIRONMENT" = "LOCAL_KIND" ]; then
+        kubectl create -n cert-manager secret tls ca-key-pair --key="$CERT_MANAGER_KEYPAIR_FILE_PATH" --cert="$CERT_MANAGER_CERTIFICATE_FILE_PATH"
+        kubectl apply -n cert-manager -f "$CERT_MANAGER_SELF_SIGNING_CLUSTER_ISSUER_CONFIG"
+    else
         kubectl apply -n cert-manager -f "$CERT_MANAGER_LETSENCRYPT_CLUSTER_ISSUER_CONFIG"
     fi
 }

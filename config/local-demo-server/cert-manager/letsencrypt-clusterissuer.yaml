@@ -10,7 +10,8 @@ spec:
       name: edge-cloud-clusterissuer-account-key
     solvers:
     - http01:
-        ingress: {}
+        ingress:
+          class: nginx
 ---
 apiVersion: cert-manager.io/v1alpha2
 kind: ClusterIssuer
@@ -24,4 +25,5 @@ spec:
       name: edge-cloud-clusterissuer-account-key
     solvers:
     - http01:
-        ingress: {}
+        ingress:
+          class: nginx

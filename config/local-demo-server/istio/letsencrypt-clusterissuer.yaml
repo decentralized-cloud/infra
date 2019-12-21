@@ -2,28 +2,24 @@ apiVersion: cert-manager.io/v1alpha2
 kind: ClusterIssuer
 metadata:
   name: letsencrypt
+  namespace: istio-system
 spec:
   acme:
     email: morteza.alizadeh@gmail.com
     server: https://acme-v02.api.letsencrypt.org/directory
     privateKeySecretRef:
       name: edge-cloud-clusterissuer-account-key
-    solvers:
-    - http01:
-        ingress:
-          class: nginx
+    http01: {}
 ---
 apiVersion: cert-manager.io/v1alpha2
 kind: ClusterIssuer
 metadata:
   name: letsencrypt-staging
+  namespace: istio-system
 spec:
   acme:
     email: morteza.alizadeh@gmail.com
     server: https://acme-staging-v02.api.letsencrypt.org/directory
     privateKeySecretRef:
-      name: edge-cloud-clusterissuer-account-key
-    solvers:
-    - http01:
-        ingress:
-          class: nginx
+      name: edge-cloud-staging-clusterissuer-account-key
+    http01: {}

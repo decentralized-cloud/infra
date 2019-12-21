@@ -40,12 +40,14 @@ function set_local_variable() {
         METALLB_CONFIG=./config/local-demo-server/metallb_config.yaml
 
         # cert-manager
-        CERT_MANAGER_LETS_ENCRYPT_CLUSTER_ISSUER_CONFIG=./config/local-demo-server/cert-manager/letsencrypt-clusterissuer.yaml
+        CERT_MANAGER_LETS_ENCRYPT_CLUSTER_ISSUER_CONFIG=./config/local-demo-server/istio/letsencrypt-clusterissuer.yaml
 
         # istio
-        ISTIO_CERTIFICATES_CONFIG=./config/local-demo-server/cert-manager/certificates.yaml
+        ISTIO_CERTIFICATES_CONFIG=./config/local-demo-server/istio/certificates.yaml
         ISTIO_GATEWAY_CONFIG=./config/local-demo-server/istio/gateway.yaml
         ISTIO_VIRTUALSERVICES_CONFIG=./config/local-demo-server/istio/virtualservices.yaml
+        ISTIO_REDIRECT_DEPLOYMENT_CONFIG=./config/local-demo-server/istio/redirect-deployment.yaml
+        ISTIO_REDIRECT_VIRTUALSERVICES_CONFIG=./config/local-demo-server/istio/redirect-virtualservice.yaml
 
         # edge-cloud
         EDGE_CLOUD_API_GATEWAY_URL="https://api-edgecloud.zapto.org/graphql"
@@ -53,13 +55,22 @@ function set_local_variable() {
     fi
 }
 
-function create_and_configure_edge_namespace() {
+function create_and_configure_namespaces() {
+    kubectl create namespace metallb-system
+
+    kubectl create namespace istio-system
+
+    kubectl create namespace cert-manager
+    kubectl label namespace cert-manager cert-manager.io/disable-validation=true
+
     kubectl create namespace edge
-    kubectl label namespace edge istio-injection=enabled # labeling the edge namespace to enable automatic istio sidecar injection
+    kubectl label namespace edge istio-injection=enabled
+
+    kubectl create namespace redirect
+    kubectl label namespace redirect istio-injection=enabled
 }
 
 function deploy_metallb() {
-    kubectl create namespace metallb-system
     helm install metallb \
         stable/metallb \
         --version v0.12.0 \
@@ -75,27 +86,7 @@ function deploy_kubernetes_dashboard() {
     kubectl apply -f "$K8S_DASHBOARD_ROLE_CONFIG"
 }
 
-function deploy_cert_manager() {
-    kubectl apply -f https://raw.githubusercontent.com/jetstack/cert-manager/release-0.12/deploy/manifests/00-crds.yaml
-    kubectl create namespace cert-manager
-
-    helm install cert-manager \
-        jetstack/cert-manager \
-        --version v0.12.0 \
-        -n cert-manager \
-        --wait
-
-    if [ "$ENVIRONMENT" = "" ] || [ "$ENVIRONMENT" = "LOCAL_KIND" ]; then
-        kubectl create secret tls ca-key-pair --key="$CERT_MANAGER_KEYPAIR_FILE_PATH" --cert="$CERT_MANAGER_CERTIFICATE_FILE_PATH" -n cert-manager
-        kubectl apply -n cert-manager -f "$CERT_MANAGER_SELF_SIGNING_CLUSTER_ISSUER_CONFIG"
-    else
-        kubectl apply -n cert-manager -f "$CERT_MANAGER_LETS_ENCRYPT_CLUSTER_ISSUER_CONFIG"
-    fi
-}
-
 function deploy_istio() {
-    kubectl create namespace istio-system
-
     helm install istio-init \
         istio.io/istio-init \
         --set app-version="1.4.2" \
@@ -145,6 +136,22 @@ function deploy_istio() {
     echo "Enter 'istioctl dashboard kiali' to access kiali dashboard"
 }
 
+function deploy_cert_manager() {
+    kubectl apply -f https://raw.githubusercontent.com/jetstack/cert-manager/release-0.12/deploy/manifests/00-crds.yaml
+    helm install cert-manager \
+        jetstack/cert-manager \
+        --version v0.12.0 \
+        -n cert-manager \
+        --wait
+
+    if [ "$ENVIRONMENT" = "" ] || [ "$ENVIRONMENT" = "LOCAL_KIND" ]; then
+        kubectl create -n cert-manager secret tls ca-key-pair --key="$CERT_MANAGER_KEYPAIR_FILE_PATH" --cert="$CERT_MANAGER_CERTIFICATE_FILE_PATH"
+        kubectl apply -n cert-manager -f "$CERT_MANAGER_SELF_SIGNING_CLUSTER_ISSUER_CONFIG"
+    else
+        kubectl apply -n istio-system -f "$CERT_MANAGER_LETS_ENCRYPT_CLUSTER_ISSUER_CONFIG"
+    fi
+}
+
 function deploy_mongodb() {
     helm install mongodb \
         stable/mongodb \
@@ -166,11 +173,17 @@ function deploy_keycloak() {
 }
 
 function apply_edge_cloud_config() {
-    # applying istio ingress related config
-    kubectl -n edge apply -f "$ISTIO_CERTIFICATES_CONFIG"
+    kubectl apply -n istio-system -f "$ISTIO_CERTIFICATES_CONFIG"
+    kubectl apply -n istio-system -f "$ISTIO_GATEWAY_CONFIG"
+    kubectl apply -n edge -f "$ISTIO_VIRTUALSERVICES_CONFIG"
+    kubectl apply -n redirect -f "$ISTIO_REDIRECT_DEPLOYMENT_CONFIG"
+    kubectl apply -n redirect -f "$ISTIO_REDIRECT_VIRTUALSERVICES_CONFIG"
 
-    kubectl -n edge apply -f <(istioctl kube-inject -f "$ISTIO_GATEWAY_CONFIG")
-    kubectl -n edge apply -f <(istioctl kube-inject -f "$ISTIO_VIRTUALSERVICES_CONFIG")
+    # applying istio ingress related config
+    # kubectl -n edge apply -f "$ISTIO_CERTIFICATES_CONFIG"
+
+    # kubectl -n edge apply -f <(istioctl kube-inject -f "$ISTIO_GATEWAY_CONFIG")
+    # kubectl -n edge apply -f <(istioctl kube-inject -f "$ISTIO_VIRTUALSERVICES_CONFIG")
 }
 
 function deploy_calico() {
@@ -207,11 +220,11 @@ function start() {
         kubectl apply -f "$CALICO"
     fi
 
-    create_and_configure_edge_namespace
+    create_and_configure_namespaces
     deploy_metallb
     deploy_kubernetes_dashboard
-    deploy_cert_manager
     deploy_istio
+    deploy_cert_manager
 
     # deploying mongodb, make sure you deploy after istio deployment is done, so it inject sidecar for mongodb
     deploy_mongodb

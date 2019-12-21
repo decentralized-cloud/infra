@@ -1,0 +1,38 @@
+apiVersion: cert-manager.io/v1alpha2
+kind: Certificate
+metadata: 
+  name: edge-cloud-com
+spec: 
+  commonName: edge-cloud.com
+  dnsNames: 
+    - edge-cloud.com
+  issuerRef: 
+    kind: ClusterIssuer
+    name: self-signed-ca-clusterissuer
+  secretName: edge-cloud-com
+---
+apiVersion: cert-manager.io/v1alpha2
+kind: Certificate
+metadata: 
+  name: api-edge-cloud-com
+spec: 
+  commonName: api.edge-cloud.com
+  dnsNames: 
+    - api.edge-cloud.com
+  issuerRef: 
+    kind: ClusterIssuer
+    name: self-signed-ca-clusterissuer
+  secretName: api-edge-cloud-com
+---
+apiVersion: cert-manager.io/v1alpha2
+kind: Certificate
+metadata: 
+  name: idp-edge-cloud-com
+spec: 
+  commonName: idp.edge-cloud.com
+  dnsNames: 
+    - idp.edge-cloud.com
+  issuerRef: 
+    kind: ClusterIssuer
+    name: self-signed-ca-clusterissuer
+  secretName: idp-edge-cloud-com

@@ -92,12 +92,7 @@ function deploy_cert_manager() {
         jetstack/cert-manager \
         --version v0.12.0 \
         -n cert-manager \
-        --wait
-
-    if [ "$ENVIRONMENT" = "" ] || [ "$ENVIRONMENT" = "LOCAL_KIND" ]; then
-        kubectl create -n cert-manager secret tls ca-key-pair --key="$CERT_MANAGER_KEYPAIR_FILE_PATH" --cert="$CERT_MANAGER_CERTIFICATE_FILE_PATH"
-        kubectl apply -n cert-manager -f "$CERT_MANAGER_SELF_SIGNING_CLUSTER_ISSUER_CONFIG"
-    else
+        --waithttp://idp-edgecloud.zapto.org/.well-known/acme-challenge/yGPitcFtFQgWNFPce499i8i8B6ghg_lvKzuC0YtQ0-U
         kubectl apply -n cert-manager -f "$CERT_MANAGER_LETSENCRYPT_CLUSTER_ISSUER_CONFIG"
     fi
 }
@@ -176,8 +171,8 @@ function apply_edge_cloud_config() {
     kubectl apply -n istio-system -f "$ISTIO_CERTIFICATES_CONFIG"
 
     if [ "$ENVIRONMENT" = "LOCAL_DEMO_SERVER" ]; then
-        kubectl -n edge apply -f <(istioctl kube-inject -f "$ISTIO_GATEWAY_HTTP_CONFIG")
-        kubectl -n edge apply -f <(istioctl kube-inject -f "$ISTIO_VIRTUALSERVICES_HTTP_CONFIG")
+        kubectl -n istio-system apply -f <(istioctl kube-inject -f "$ISTIO_GATEWAY_HTTP_CONFIG")
+        kubectl -n istio-system apply -f <(istioctl kube-inject -f "$ISTIO_VIRTUALSERVICES_HTTP_CONFIG")
     fi
 
     kubectl -n edge apply -f <(istioctl kube-inject -f "$ISTIO_GATEWAY_HTTPS_CONFIG")

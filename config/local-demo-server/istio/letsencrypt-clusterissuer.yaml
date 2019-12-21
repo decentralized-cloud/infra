@@ -14,10 +14,6 @@ spec:
         http01:
           ingress:
             class: istio
-        domains:
-          - edgecloud.zapto.org
-          - api-edgecloud.zapto.org
-          - idp-edgecloud.zapto.org
 ---
 apiVersion: cert-manager.io/v1alpha2
 kind: ClusterIssuer
@@ -35,7 +31,3 @@ spec:
         http01:
           ingress:
             class: istio
-        domains:
-          - edgecloud.zapto.org
-          - api-edgecloud.zapto.org
-          - idp-edgecloud.zapto.org

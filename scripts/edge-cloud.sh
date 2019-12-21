@@ -167,7 +167,7 @@ function deploy_keycloak() {
 
 function apply_edge_cloud_config() {
     # applying istio ingress related config
-    kubectl apply -n istio-system -f "$ISTIO_CERTIFICATES_CONFIG"
+    kubectl -n edge apply -f "$ISTIO_CERTIFICATES_CONFIG"
 
     kubectl -n edge apply -f <(istioctl kube-inject -f "$ISTIO_GATEWAY_CONFIG")
     kubectl -n edge apply -f <(istioctl kube-inject -f "$ISTIO_VIRTUALSERVICES_CONFIG")

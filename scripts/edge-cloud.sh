@@ -98,7 +98,7 @@ function deploy_cert_manager() {
         kubectl create -n cert-manager secret tls ca-key-pair --key="$CERT_MANAGER_KEYPAIR_FILE_PATH" --cert="$CERT_MANAGER_CERTIFICATE_FILE_PATH"
         kubectl apply -n cert-manager -f "$CERT_MANAGER_SELF_SIGNING_CLUSTER_ISSUER_CONFIG"
     else
-        kubectl apply -n istio-system -f "$CERT_MANAGER_LETSENCRYPT_CLUSTER_ISSUER_CONFIG"
+        kubectl apply -n edge -f "$CERT_MANAGER_LETSENCRYPT_CLUSTER_ISSUER_CONFIG"
     fi
 }
 
@@ -135,15 +135,7 @@ function deploy_istio() {
             istio.io/istio \
             --set app-version="1.4.2" \
             --set global.mtls.enabled=true \
-            --set global.controlPlaneSecurityEnabled=true \
-            --set global.configValidation=false \
-            --set global.proxy.accessLogFile="/dev/stdout" \
-            --set kiali.enabled=true \
-            --set gateways.istio-ingressgateway.sds.enabled=true \
-            --set gateways.istio-egressgateway.enabled=true \
-            --set sidecarInjectorWebhook.rewriteAppHTTPProbe=true \
-            --set mixer.telemetry.enabled=false \
-            -n istio-system \
+            --set global.controlPlaneSecurityEnabled=true \deploy_cert_manager
             --wait
     fi
 
@@ -173,11 +165,11 @@ function deploy_keycloak() {
 }
 
 function apply_edge_cloud_config() {
-    kubectl apply -n istio-system -f "$ISTIO_CERTIFICATES_CONFIG"
+    kubectl apply -n edge -f "$ISTIO_CERTIFICATES_CONFIG"
 
     if [ "$ENVIRONMENT" = "LOCAL_DEMO_SERVER" ]; then
-        kubectl -n istio-system apply -f <(istioctl kube-inject -f "$ISTIO_GATEWAY_HTTP_CONFIG")
-        kubectl -n istio-system apply -f <(istioctl kube-inject -f "$ISTIO_VIRTUALSERVICES_HTTP_CONFIG")
+        kubectl -n edge apply -f <(istioctl kube-inject -f "$ISTIO_GATEWAY_HTTP_CONFIG")
+        kubectl -n edge apply -f <(istioctl kube-inject -f "$ISTIO_VIRTUALSERVICES_HTTP_CONFIG")
     fi
 
     kubectl -n edge apply -f <(istioctl kube-inject -f "$ISTIO_GATEWAY_HTTPS_CONFIG")

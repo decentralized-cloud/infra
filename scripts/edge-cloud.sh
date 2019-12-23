@@ -61,7 +61,6 @@ function create_and_configure_namespaces() {
     kubectl create namespace istio-system
 
     kubectl create namespace cert-manager
-    kubectl label namespace cert-manager istio-injection=enabled
 
     kubectl create namespace edge
     kubectl label namespace edge istio-injection=enabled

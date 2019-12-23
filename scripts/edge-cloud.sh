@@ -170,18 +170,18 @@ function apply_edge_cloud_config() {
         kubectl create -n cert-manager secret tls ca-key-pair --key="$CERT_MANAGER_KEYPAIR_FILE_PATH" --cert="$CERT_MANAGER_CERTIFICATE_FILE_PATH"
         kubectl apply -n cert-manager -f "$CERT_MANAGER_SELF_SIGNING_CLUSTER_ISSUER_CONFIG"
     else
-        kubectl apply -n edge -f "$CERT_MANAGER_LETSENCRYPT_CLUSTER_ISSUER_CONFIG"
+        kubectl apply -n edge -f <(istioctl kube-inject -f "$CERT_MANAGER_LETSENCRYPT_CLUSTER_ISSUER_CONFIG")
     fi
 
-    kubectl apply -n edge -f "$ISTIO_CERTIFICATES_CONFIG"
+    kubectl apply -n edge -f <(istioctl kube-inject -f "$ISTIO_CERTIFICATES_CONFIG")
 
     if [ "$ENVIRONMENT" = "LOCAL_DEMO_SERVER" ]; then
-        kubectl -n edge apply -f <(istioctl kube-inject -f "$ISTIO_GATEWAY_HTTP_CONFIG")
-        kubectl -n edge apply -f <(istioctl kube-inject -f "$ISTIO_VIRTUALSERVICES_HTTP_CONFIG")
+        kubectl apply -n edge -f <(istioctl kube-inject -f "$ISTIO_GATEWAY_HTTP_CONFIG")
+        kubectl apply -n edge -f <(istioctl kube-inject -f "$ISTIO_VIRTUALSERVICES_HTTP_CONFIG")
     fi
 
-    kubectl -n edge apply -f <(istioctl kube-inject -f "$ISTIO_GATEWAY_HTTPS_CONFIG")
-    kubectl -n edge apply -f <(istioctl kube-inject -f "$ISTIO_VIRTUALSERVICES_HTTPS_CONFIG")
+    kubectl apply -n edge -f <(istioctl kube-inject -f "$ISTIO_GATEWAY_HTTPS_CONFIG")
+    kubectl apply -n edge -f <(istioctl kube-inject -f "$ISTIO_VIRTUALSERVICES_HTTPS_CONFIG")
 }
 
 function print_help() {
@@ -217,8 +217,8 @@ function start() {
     create_and_configure_namespaces
     deploy_metallb
     deploy_kubernetes_dashboard
-    deploy_istio
     deploy_cert_manager
+    deploy_istio
 
     # deploying mongodb, make sure you deploy after istio deployment is done, so it inject sidecar for mongodb
     deploy_mongodb

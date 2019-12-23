@@ -26,7 +26,7 @@ spec:
         number: 443
         protocol: HTTPS
       tls:
-        credentialName: edgecloud-zapto-org
+        credentialName: api-edgecloud-zapto-org
         mode: SIMPLE
         privateKey: sds
         serverCertificate: sds
@@ -38,7 +38,7 @@ spec:
         number: 443
         protocol: HTTPS
       tls:
-        credentialName: edgecloud-zapto-org
+        credentialName: idp-edgecloud-zapto-org
         mode: SIMPLE
         privateKey: sds
         serverCertificate: sds

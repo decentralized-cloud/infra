@@ -135,7 +135,15 @@ function deploy_istio() {
             istio.io/istio \
             --set app-version="1.4.2" \
             --set global.mtls.enabled=true \
-            --set global.controlPlaneSecurityEnabled=true \deploy_cert_manager
+            --set global.controlPlaneSecurityEnabled=true \
+            --set global.configValidation=false \
+            --set global.proxy.accessLogFile="/dev/stdout" \
+            --set kiali.enabled=true \
+            --set gateways.istio-ingressgateway.sds.enabled=true \
+            --set gateways.istio-egressgateway.enabled=true \
+            --set sidecarInjectorWebhook.rewriteAppHTTPProbe=true \
+            --set mixer.telemetry.enabled=false \
+            -n istio-system \
             --wait
     fi
 

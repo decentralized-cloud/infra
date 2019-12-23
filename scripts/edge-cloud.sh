@@ -98,7 +98,7 @@ function deploy_cert_manager() {
         kubectl create -n cert-manager secret tls ca-key-pair --key="$CERT_MANAGER_KEYPAIR_FILE_PATH" --cert="$CERT_MANAGER_CERTIFICATE_FILE_PATH"
         kubectl apply -n cert-manager -f "$CERT_MANAGER_SELF_SIGNING_CLUSTER_ISSUER_CONFIG"
     else
-        kubectl apply -n cert-manager -f "$CERT_MANAGER_LETSENCRYPT_CLUSTER_ISSUER_CONFIG"
+        kubectl apply -n istio-system -f "$CERT_MANAGER_LETSENCRYPT_CLUSTER_ISSUER_CONFIG"
     fi
 }
 

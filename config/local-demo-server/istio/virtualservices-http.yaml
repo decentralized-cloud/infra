@@ -17,7 +17,7 @@ spec:
       route:
         -
           destination:
-            host: frontend.edge.svc.cluster.local
+            host: xxxxx
             port:
               number: 8089
 ---
@@ -40,7 +40,7 @@ spec:
       route:
         -
           destination:
-            host: api-gateway.edge.svc.cluster.local
+            host: xxxxx
             port:
               number: 8089
 ---
@@ -63,6 +63,6 @@ spec:
       route:
         -
           destination:
-            host: keycloak-http.edge.svc.cluster.local
+            host: xxxxx
             port:
               number: 8089

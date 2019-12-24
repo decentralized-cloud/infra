@@ -10,5 +10,3 @@ spec:
   commonName: edgecloud.zapto.org
   dnsNames:
     - edgecloud.zapto.org
-    - api-edgecloud.zapto.org
-    - idp-edgecloud.zapto.org

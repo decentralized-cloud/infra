@@ -1,18 +1,11 @@
 apiVersion: networking.istio.io/v1alpha3
 kind: Gateway
 metadata:
-  name: edge-cloud-gateway
+  name: edge-cloud-gateway-https
 spec:
   selector:
     istio: ingressgateway
   servers:
-    -
-      hosts:
-        - '*'
-      port:
-        name: http
-        number: 80
-        protocol: HTTP
     -
       hosts:
         - '*'

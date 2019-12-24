@@ -26,7 +26,7 @@ function set_local_variable() {
         CERT_MANAGER_SELF_SIGNING_CLUSTER_ISSUER_CONFIG=./config/local/cert-manager/self-signing-clusterissuer.yaml
 
         # istio
-        ISTIO_CERTIFICATES_CONFIG=./config/local/cert-manager/certificates.yaml
+        ISTIO_CERTIFICATE_CONFIG=./config/local/cert-manager/certificate.yaml
         ISTIO_GATEWAY_CONFIG=./config/local/istio/gateway.yaml
         ISTIO_VIRTUALSERVICES_CONFIG=./config/local/istio/virtualservices.yaml
 
@@ -43,14 +43,15 @@ function set_local_variable() {
         CERT_MANAGER_LETSENCRYPT_CLUSTER_ISSUER_CONFIG=./config/local-demo-server/istio/letsencrypt-clusterissuer.yaml
 
         # istio
-        ISTIO_CERTIFICATES_CONFIG=./config/local-demo-server/istio/certificates.yaml
-        ISTIO_GATEWAY_CONFIG=./config/local-demo-server/istio/gateway.yaml
+        ISTIO_CERTIFICATE_CONFIG=./config/local-demo-server/istio/certificate.yaml
+        ISTIO_GATEWAY_HTTP_CONFIG=./config/local-demo-server/istio/gateway-http.yaml
+        ISTIO_GATEWAY_HTTPS_CONFIG=./config/local-demo-server/istio/gateway-https.yaml
         ISTIO_VIRTUALSERVICES_HTTP_CONFIG=./config/local-demo-server/istio/virtualservices-http.yaml
         ISTIO_VIRTUALSERVICES_HTTPS_CONFIG=./config/local-demo-server/istio/virtualservices-https.yaml
 
         # edge-cloud
-        EDGE_CLOUD_API_GATEWAY_URL="https://api-edgecloud.zapto.org/graphql"
-        EDGE_CLOUD_IDP_URL="https://idp-edgecloud.zapto.org/auth/realms/master"
+        EDGE_CLOUD_API_GATEWAY_URL="https://edgecloud.zapto.org/api/graphql"
+        EDGE_CLOUD_IDP_URL="https://edgecloud.zapto.org/idp/auth/realms/master"
     fi
 }
 
@@ -172,14 +173,15 @@ function apply_edge_cloud_config() {
         kubectl apply -n edge -f "$CERT_MANAGER_LETSENCRYPT_CLUSTER_ISSUER_CONFIG"
     fi
 
-    kubectl apply -n edge -f "$ISTIO_CERTIFICATES_CONFIG"
-
-    kubectl apply -n edge -f <(istioctl kube-inject -f "$ISTIO_GATEWAY_CONFIG")
-    kubectl apply -n edge -f <(istioctl kube-inject -f "$ISTIO_VIRTUALSERVICES_HTTPS_CONFIG")
-
     if [ "$ENVIRONMENT" = "LOCAL_DEMO_SERVER" ]; then
+        kubectl apply -n edge -f <(istioctl kube-inject -f "$ISTIO_GATEWAY_HTTP_CONFIG")
         kubectl apply -n edge -f <(istioctl kube-inject -f "$ISTIO_VIRTUALSERVICES_HTTP_CONFIG")
     fi
+
+    kubectl apply -n edge -f "$ISTIO_CERTIFICATE_CONFIG"
+
+    kubectl apply -n edge -f <(istioctl kube-inject -f "$ISTIO_GATEWAY_HTTPS_CONFIG")
+    kubectl apply -n edge -f <(istioctl kube-inject -f "$ISTIO_VIRTUALSERVICES_HTTPS_CONFIG")
 }
 
 function print_help() {

@@ -6,7 +6,7 @@ spec:
   hosts:
     - edgecloud.zapto.org
   gateways:
-    - edge-cloud-gateway-http
+    - edge-cloud-gateway
   http:
     -
       match:
@@ -29,7 +29,7 @@ spec:
   hosts:
     - api-edgecloud.zapto.org
   gateways:
-    - edge-cloud-gateway-http
+    - edge-cloud-gateway
   http:
     -
       match:
@@ -52,7 +52,7 @@ spec:
   hosts:
     - idp-edgecloud.zapto.org
   gateways:
-    - edge-cloud-gateway-http
+    - edge-cloud-gateway
   http:
     -
       match:

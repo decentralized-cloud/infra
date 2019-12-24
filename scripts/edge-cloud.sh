@@ -44,8 +44,7 @@ function set_local_variable() {
 
         # istio
         ISTIO_CERTIFICATES_CONFIG=./config/local-demo-server/istio/certificates.yaml
-        ISTIO_GATEWAY_HTTP_CONFIG=./config/local-demo-server/istio/gateway-http.yaml
-        ISTIO_GATEWAY_HTTPS_CONFIG=./config/local-demo-server/istio/gateway-https.yaml
+        ISTIO_GATEWAY_CONFIG=./config/local-demo-server/istio/gateway.yaml
         ISTIO_VIRTUALSERVICES_HTTP_CONFIG=./config/local-demo-server/istio/virtualservices-http.yaml
         ISTIO_VIRTUALSERVICES_HTTPS_CONFIG=./config/local-demo-server/istio/virtualservices-https.yaml
 
@@ -175,13 +174,12 @@ function apply_edge_cloud_config() {
 
     kubectl apply -n edge -f "$ISTIO_CERTIFICATES_CONFIG"
 
+    kubectl apply -n edge -f <(istioctl kube-inject -f "$ISTIO_GATEWAY_CONFIG")
+    kubectl apply -n edge -f <(istioctl kube-inject -f "$ISTIO_VIRTUALSERVICES_HTTPS_CONFIG")
+
     if [ "$ENVIRONMENT" = "LOCAL_DEMO_SERVER" ]; then
-        kubectl apply -n edge -f <(istioctl kube-inject -f "$ISTIO_GATEWAY_HTTP_CONFIG")
         kubectl apply -n edge -f <(istioctl kube-inject -f "$ISTIO_VIRTUALSERVICES_HTTP_CONFIG")
     fi
-
-    kubectl apply -n edge -f <(istioctl kube-inject -f "$ISTIO_GATEWAY_HTTPS_CONFIG")
-    kubectl apply -n edge -f <(istioctl kube-inject -f "$ISTIO_VIRTUALSERVICES_HTTPS_CONFIG")
 }
 
 function print_help() {

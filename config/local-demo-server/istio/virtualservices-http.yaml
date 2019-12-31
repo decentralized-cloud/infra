@@ -17,6 +17,6 @@ spec:
       route:
         -
           destination:
-            host: xxxxx
+            host: xxxxxxxx.edge.svc.cluster.local
             port:
               number: 8089

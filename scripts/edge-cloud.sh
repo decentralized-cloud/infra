@@ -178,7 +178,7 @@ function apply_edge_cloud_config() {
         kubectl apply -n edge -f <(istioctl kube-inject -f "$ISTIO_VIRTUALSERVICES_HTTP_CONFIG")
     fi
 
-    kubectl apply -n edge -f "$ISTIO_CERTIFICATE_CONFIG"
+    kubectl apply -n istio-system -f "$ISTIO_CERTIFICATE_CONFIG"
 
     kubectl apply -n edge -f <(istioctl kube-inject -f "$ISTIO_GATEWAY_HTTPS_CONFIG")
     kubectl apply -n edge -f <(istioctl kube-inject -f "$ISTIO_VIRTUALSERVICES_HTTPS_CONFIG")

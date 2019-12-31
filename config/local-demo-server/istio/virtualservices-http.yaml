@@ -17,6 +17,6 @@ spec:
       route:
         -
           destination:
-            host: xxxxxxxx.edge.svc.cluster.local
+            host: xxxxxxxx.istio-system.svc.cluster.local
             port:
               number: 8089

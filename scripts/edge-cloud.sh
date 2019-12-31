@@ -174,8 +174,8 @@ function apply_edge_cloud_config() {
     fi
 
     if [ "$ENVIRONMENT" = "LOCAL_DEMO_SERVER" ]; then
-        kubectl apply -n edge -f <(istioctl kube-inject -f "$ISTIO_GATEWAY_HTTP_CONFIG")
-        kubectl apply -n edge -f <(istioctl kube-inject -f "$ISTIO_VIRTUALSERVICES_HTTP_CONFIG")
+        kubectl apply -n istio-system -f <(istioctl kube-inject -f "$ISTIO_GATEWAY_HTTP_CONFIG")
+        kubectl apply -n istio-system -f <(istioctl kube-inject -f "$ISTIO_VIRTUALSERVICES_HTTP_CONFIG")
     fi
 
     kubectl apply -n istio-system -f "$ISTIO_CERTIFICATE_CONFIG"

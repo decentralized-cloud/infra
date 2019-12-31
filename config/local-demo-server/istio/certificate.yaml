@@ -6,7 +6,7 @@ spec:
   secretName: edgecloud-zapto-org
   issuerRef:
     kind: ClusterIssuer
-    name: letsencrypt-staging
+    name: letsencrypt
   commonName: edgecloud.zapto.org
   dnsNames:
     - edgecloud.zapto.org

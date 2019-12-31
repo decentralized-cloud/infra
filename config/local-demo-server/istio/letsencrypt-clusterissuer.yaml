@@ -14,9 +14,9 @@ spec:
           ingress:
             class: istio
             podTemplate:
-            metadata:
-              annotations:
-                sidecar.istio.io/inject: "true"
+              metadata:
+                annotations:
+                  sidecar.istio.io/inject: "true"
 ---
 apiVersion: cert-manager.io/v1alpha2
 kind: ClusterIssuer
@@ -34,6 +34,6 @@ spec:
           ingress:
             class: istio
             podTemplate:
-            metadata:
-              annotations:
-                sidecar.istio.io/inject: "true"
+              metadata:
+                annotations:
+                  sidecar.istio.io/inject: "true"

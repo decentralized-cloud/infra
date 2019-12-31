@@ -41,8 +41,6 @@ spec:
         -
           uri:
             prefix: /
-      rewrite:
-        uri: /
       ignoreUriCase: true
       route:
         -

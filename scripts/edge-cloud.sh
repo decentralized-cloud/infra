@@ -24,40 +24,30 @@ function set_local_variable() {
         CERT_MANAGER_KEYPAIR_FILE_PATH=./certificates/ca.key
         CERT_MANAGER_CERTIFICATE_FILE_PATH=./certificates/ca.crt
         CERT_MANAGER_SELF_SIGNING_CLUSTER_ISSUER_CONFIG=./config/local/cert-manager/self-signing-clusterissuer.yaml
-        CERT_MANAGER_FRONTEND_EDGE_CLOUD_CERTIFICATE_CONFIG=./config/local/cert-manager/frontend-edge-cloud-certificate.yaml
-        CERT_MANAGER_API_EDGE_CLOUD_CERTIFICATE_CONFIG=./config/local/cert-manager/api-edge-cloud-certificate.yaml
-        CERT_MANAGER_IDP_EDGE_CLOUD_CERTIFICATE_CONFIG=./config/local/cert-manager/idp-edge-cloud-certificate.yaml
 
         # istio
+        ISTIO_CERTIFICATE_CONFIG=./config/local/cert-manager/certificate.yaml
         ISTIO_GATEWAY_CONFIG=./config/local/istio/gateway.yaml
-        ISTIO_VIRTUALSERVICE_FRONTEND_CONFIG=./config/local/istio/frontend-virtualservice.yaml
-        ISTIO_VIRTUALSERVICE_API_CONFIG=./config/local/istio/api-virtualservice.yaml
-        ISTIO_VIRTUALSERVICE_IDP_CONFIG=./config/local/istio/idp-virtualservice.yaml
+        ISTIO_VIRTUALSERVICES_CONFIG=./config/local/istio/virtualservices.yaml
 
         # edge-cloud
         EDGE_CLOUD_API_GATEWAY_URL="https://api.edge-cloud.com/graphql"
         EDGE_CLOUD_IDP_URL="https://idp.edge-cloud.com/auth/realms/master"
     else
-        CALICO=./config/local-demo-server/calico.yaml
+        DEMO_SERVER_CALICO=./config/local-demo-server/calico.yaml
 
         # metallb
         METALLB_CONFIG=./config/local-demo-server/metallb_config.yaml
 
         # cert-manager
-        CERT_MANAGER_LETS_ENCRYPT_STAGING_CLUSTER_ISSUER_CONFIG=./config/local-demo-server/cert-manager/lets-encrypt-staging-clusterissuer.yaml
-        CERT_MANAGER_LETS_ENCRYPT_PROD_CLUSTER_ISSUER_CONFIG=./config/local-demo-server/cert-manager/lets-encrypt-prod-clusterissuer.yaml
-        CERT_MANAGER_FRONTEND_EDGE_CLOUD_CERTIFICATE_CONFIG=./config/local-demo-server/cert-manager/frontend-edge-cloud-certificate.yaml
-        CERT_MANAGER_API_EDGE_CLOUD_CERTIFICATE_CONFIG=./config/local-demo-server/cert-manager/api-edge-cloud-certificate.yaml
-        CERT_MANAGER_IDP_EDGE_CLOUD_CERTIFICATE_CONFIG=./config/local-demo-server/cert-manager/idp-edge-cloud-certificate.yaml
+        CERT_MANAGER_LETSENCRYPT_CLUSTER_ISSUER_CONFIG=./config/local-demo-server/istio/letsencrypt-clusterissuer.yaml
 
         # istio
-        ISTIO_GATEWAY_CONFIG=./config/local-demo-server/istio/gateway.yaml
-        ISTIO_VIRTUALSERVICE_FRONTEND_CONFIG=./config/local-demo-server/istio/frontend-virtualservice.yaml
-        ISTIO_VIRTUALSERVICE_API_CONFIG=./config/local-demo-server/istio/api-virtualservice.yaml
-        ISTIO_VIRTUALSERVICE_IDP_CONFIG=./config/local-demo-server/istio/idp-virtualservice.yaml
-
         ISTIO_CERTIFICATE_CONFIG=./config/local-demo-server/istio/certificate.yaml
-        ISTIO_INGRESS_CONFIG=./config/local-demo-server/istio/ingress.yaml
+        ISTIO_GATEWAY_HTTP_CONFIG=./config/local-demo-server/istio/gateway-http.yaml
+        ISTIO_GATEWAY_HTTPS_CONFIG=./config/local-demo-server/istio/gateway-https.yaml
+        ISTIO_VIRTUALSERVICES_HTTP_CONFIG=./config/local-demo-server/istio/virtualservices-http.yaml
+        ISTIO_VIRTUALSERVICES_HTTPS_CONFIG=./config/local-demo-server/istio/virtualservices-https.yaml
 
         # edge-cloud
         EDGE_CLOUD_API_GATEWAY_URL="https://api-edgecloud.zapto.org/graphql"
@@ -65,13 +55,22 @@ function set_local_variable() {
     fi
 }
 
-function create_and_configure_edge_namespace() {
+function create_and_configure_namespaces() {
+    kubectl create namespace metallb-system
+
+    kubectl create namespace istio-system
+
+    kubectl create namespace cert-manager
+
     kubectl create namespace edge
-    kubectl label namespace edge istio-injection=enabled # labeling the edge namespace to enable automatic istio sidecar injection
+    kubectl label namespace edge istio-injection=enabled
+}
+
+function deploy_calico() {
+    kubectl apply -f "$DEMO_SERVER_CALICO"
 }
 
 function deploy_metallb() {
-    kubectl create namespace metallb-system
     helm install metallb \
         stable/metallb \
         --version v0.12.0 \
@@ -89,26 +88,14 @@ function deploy_kubernetes_dashboard() {
 
 function deploy_cert_manager() {
     kubectl apply -f https://raw.githubusercontent.com/jetstack/cert-manager/release-0.12/deploy/manifests/00-crds.yaml
-    kubectl create namespace cert-manager
-
     helm install cert-manager \
         jetstack/cert-manager \
         --version v0.12.0 \
         -n cert-manager \
         --wait
-
-    if [ "$ENVIRONMENT" = "" ] || [ "$ENVIRONMENT" = "LOCAL_KIND" ]; then
-        kubectl create secret tls ca-key-pair --key="$CERT_MANAGER_KEYPAIR_FILE_PATH" --cert="$CERT_MANAGER_CERTIFICATE_FILE_PATH" -n cert-manager
-        kubectl apply -n cert-manager -f "$CERT_MANAGER_SELF_SIGNING_CLUSTER_ISSUER_CONFIG"
-    else
-        kubectl apply -n cert-manager -f "$CERT_MANAGER_LETS_ENCRYPT_STAGING_CLUSTER_ISSUER_CONFIG"
-        kubectl apply -n cert-manager -f "$CERT_MANAGER_LETS_ENCRYPT_PROD_CLUSTER_ISSUER_CONFIG"
-    fi
 }
 
 function deploy_istio() {
-    kubectl create namespace istio-system
-
     helm install istio-init \
         istio.io/istio-init \
         --set app-version="1.4.2" \
@@ -122,8 +109,6 @@ function deploy_istio() {
         job/istio-init-crd-14-1.4.2  \
         -n istio-system
 
-    kubectl apply -f https://raw.githubusercontent.com/jetstack/cert-manager/release-0.6/deploy/manifests/00-crds.yaml
-
     if [ "$ENVIRONMENT" = "" ] || [ "$ENVIRONMENT" = "LOCAL_KIND" ]; then
         helm install istio \
             istio.io/istio \
@@ -132,12 +117,7 @@ function deploy_istio() {
             --set global.controlPlaneSecurityEnabled=true \
             --set global.configValidation=false \
             --set global.proxy.accessLogFile="/dev/stdout" \
-            --set global.k8sIngress.enabled=true \
-            --set global.k8sIngress.enableHttps=true \
-            --set global.k8sIngress.gatewayName=ingressgateway \
-            --set gateways.istio-ingressgateway.sds.enabled=true \
             --set kiali.enabled=true \
-            --set certmanager.enabled=true \
             --set gateways.istio-ingressgateway.sds.enabled=true \
             --set gateways.istio-egressgateway.enabled=true \
             --set sidecarInjectorWebhook.rewriteAppHTTPProbe=true \
@@ -151,12 +131,7 @@ function deploy_istio() {
             --set global.controlPlaneSecurityEnabled=true \
             --set global.configValidation=false \
             --set global.proxy.accessLogFile="/dev/stdout" \
-            --set global.k8sIngress.enabled=true \
-            --set global.k8sIngress.enableHttps=true \
-            --set global.k8sIngress.gatewayName=ingressgateway \
-            --set gateways.istio-ingressgateway.sds.enabled=true \
             --set kiali.enabled=true \
-            --set certmanager.enabled=true \
             --set gateways.istio-ingressgateway.sds.enabled=true \
             --set gateways.istio-egressgateway.enabled=true \
             --set sidecarInjectorWebhook.rewriteAppHTTPProbe=true \
@@ -165,16 +140,9 @@ function deploy_istio() {
             --wait
     fi
 
-    kubectl -n istio-system \
-        patch gateway istio-autogenerated-k8s-ingress --type=json \
-        -p='[{"op": "replace", "path": "/spec/servers/1/tls", "value": {"credentialName": "edge-cloud-ingress-cert", "mode": "SIMPLE", "privateKey": "sds", "serverCertificate": "sds"}}]'
-
     # deploying Kiali dashboard
     kubectl apply -f "$ISTIO_KIALI_SECRET_CONFIG"
     echo "Enter 'istioctl dashboard kiali' to access kiali dashboard"
-
-    kubectl apply -f "$ISTIO_CERTIFICATE_CONFIG"
-    kubectl apply -f "$ISTIO_INGRESS_CONFIG"
 }
 
 function deploy_mongodb() {
@@ -198,19 +166,22 @@ function deploy_keycloak() {
 }
 
 function apply_edge_cloud_config() {
-    # applying istio ingress related config
-    kubectl apply -n istio-system -f "$CERT_MANAGER_IDP_EDGE_CLOUD_CERTIFICATE_CONFIG"
-    kubectl apply -n istio-system -f "$CERT_MANAGER_FRONTEND_EDGE_CLOUD_CERTIFICATE_CONFIG"
-    kubectl apply -n istio-system -f "$CERT_MANAGER_API_EDGE_CLOUD_CERTIFICATE_CONFIG"
+    if [ "$ENVIRONMENT" = "" ] || [ "$ENVIRONMENT" = "LOCAL_KIND" ]; then
+        kubectl create -n cert-manager secret tls ca-key-pair --key="$CERT_MANAGER_KEYPAIR_FILE_PATH" --cert="$CERT_MANAGER_CERTIFICATE_FILE_PATH"
+        kubectl apply -n cert-manager -f "$CERT_MANAGER_SELF_SIGNING_CLUSTER_ISSUER_CONFIG"
+    else
+        kubectl apply -n edge -f "$CERT_MANAGER_LETSENCRYPT_CLUSTER_ISSUER_CONFIG"
+    fi
 
-    kubectl -n edge apply -f <(istioctl kube-inject -f "$ISTIO_GATEWAY_CONFIG")
-    kubectl -n edge apply -f <(istioctl kube-inject -f "$ISTIO_VIRTUALSERVICE_IDP_CONFIG")
-    kubectl -n edge apply -f <(istioctl kube-inject -f "$ISTIO_VIRTUALSERVICE_FRONTEND_CONFIG")
-    kubectl -n edge apply -f <(istioctl kube-inject -f "$ISTIO_VIRTUALSERVICE_API_CONFIG")
-}
+    if [ "$ENVIRONMENT" = "LOCAL_DEMO_SERVER" ]; then
+        kubectl apply -n edge -f <(istioctl kube-inject -f "$ISTIO_GATEWAY_HTTP_CONFIG")
+        kubectl apply -n edge -f <(istioctl kube-inject -f "$ISTIO_VIRTUALSERVICES_HTTP_CONFIG")
+    fi
 
-function deploy_calico() {
-    kubectl apply -f "$DEMO_SERVER_CALICO"
+    kubectl apply -n edge -f "$ISTIO_CERTIFICATE_CONFIG"
+
+    kubectl apply -n edge -f <(istioctl kube-inject -f "$ISTIO_GATEWAY_HTTPS_CONFIG")
+    kubectl apply -n edge -f <(istioctl kube-inject -f "$ISTIO_VIRTUALSERVICES_HTTPS_CONFIG")
 }
 
 function print_help() {
@@ -240,19 +211,20 @@ function start() {
         sudo chown "$(id -u)":"$(id -g)" "$HOME"/.kube/config
 
         kubectl taint nodes --all node-role.kubernetes.io/master-
-        kubectl apply -f "$CALICO"
+        deploy_calico
     fi
 
-    create_and_configure_edge_namespace
+    create_and_configure_namespaces
     deploy_metallb
     deploy_kubernetes_dashboard
-    # deploy_cert_manager
+    deploy_cert_manager
     deploy_istio
 
     # deploying mongodb, make sure you deploy after istio deployment is done, so it inject sidecar for mongodb
     deploy_mongodb
 
     deploy_keycloak
+    apply_edge_cloud_config
 
     if [ "$ENVIRONMENT" = "" ] || [ "$ENVIRONMENT" = "LOCAL_KIND" ]; then
         echo "You need to make sure edge-cloud.com is added to your /etc/hosts file locally"
@@ -315,8 +287,6 @@ function deploy_services() {
     done
 
     deploy_frontend_service "$EDGE_CLOUD_SERVICES_CONFIG"
-
-    # apply_edge_cloud_config
 }
 
 function remove_services() {

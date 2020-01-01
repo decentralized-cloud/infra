@@ -1,46 +1,44 @@
---- 
-  apiVersion: networking.istio.io/v1alpha3
-  kind: Gateway
-  metadata: 
-    name: edge-cloud-gateway
-  spec: 
-    selector: 
-      istio: ingressgateway
-    servers: 
-      - 
-        hosts: 
-          - edge-cloud.com
-        port: 
-          name: https-443-edge-cloud-com
-          number: 443
-          protocol: HTTPS
-        tls: 
-          credentialName: edge-cloud-com-tls
-          mode: SIMPLE
-          privateKey: sds
-          serverCertificate: sds
-      - 
-        hosts: 
-          - api.edge-cloud.com
-        port: 
-          name: https-443-api-edge-cloud-com
-          number: 443
-          protocol: HTTPS
-        tls: 
-          credentialName: api-edge-cloud-com-tls
-          mode: SIMPLE
-          privateKey: sds
-          serverCertificate: sds
-      - 
-        hosts: 
-          - idp.edge-cloud.com
-        port: 
-          name: https-443-idp-edge-cloud-com
-          number: 443
-          protocol: HTTPS
-        tls: 
-          credentialName: idp-edge-cloud-com-tls
-          mode: SIMPLE
-          privateKey: sds
-          serverCertificate: sds
-  
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: edge-cloud-gateway
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+    -
+      hosts:
+        - edge-cloud.com
+      port:
+        name: https-443-edge-cloud-com
+        number: 443
+        protocol: HTTPS
+      tls:
+        credentialName: edge-cloud-com-tls
+        mode: SIMPLE
+        privateKey: sds
+        serverCertificate: sds
+    -
+      hosts:
+        - api.edge-cloud.com
+      port:
+        name: https-443-api-edge-cloud-com
+        number: 443
+        protocol: HTTPS
+      tls:
+        credentialName: api-edge-cloud-com-tls
+        mode: SIMPLE
+        privateKey: sds
+        serverCertificate: sds
+    -
+      hosts:
+        - idp.edge-cloud.com
+      port:
+        name: https-443-idp-edge-cloud-com
+        number: 443
+        protocol: HTTPS
+      tls:
+        credentialName: idp-edge-cloud-com-tls
+        mode: SIMPLE
+        privateKey: sds
+        serverCertificate: sds

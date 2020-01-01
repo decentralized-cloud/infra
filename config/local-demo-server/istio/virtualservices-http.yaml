@@ -20,3 +20,49 @@ spec:
             host: xxxxxxxx.edge.svc.cluster.local
             port:
               number: 8089
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: api-edge-cloud-http
+spec:
+  hosts:
+    - api-edgecloud.zapto.org
+  gateways:
+    - edge-cloud-gateway-http
+  http:
+    -
+      match:
+        -
+          uri:
+            prefix: /
+      ignoreUriCase: true
+      route:
+        -
+          destination:
+            host: xxxxxxxx.edge.svc.cluster.local
+            port:
+              number: 8089
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: idp-edge-cloud-http
+spec:
+  hosts:
+    - idp-edgecloud.zapto.org
+  gateways:
+    - edge-cloud-gateway-http
+  http:
+    -
+      match:
+        -
+          uri:
+            prefix: /
+      ignoreUriCase: true
+      route:
+        -
+          destination:
+            host: xxxxxxxx.edge.svc.cluster.local
+            port:
+              number: 8089

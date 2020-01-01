@@ -50,8 +50,8 @@ function set_local_variable() {
         ISTIO_VIRTUALSERVICES_HTTPS_CONFIG=./config/local-demo-server/istio/virtualservices-https.yaml
 
         # edge-cloud
-        EDGE_CLOUD_API_GATEWAY_URL="https://edgecloud.zapto.org/api/graphql"
-        EDGE_CLOUD_IDP_URL="https://edgecloud.zapto.org/idp/auth/realms/master"
+        EDGE_CLOUD_API_GATEWAY_URL="https://api-edgecloud.zapto.org/graphql"
+        EDGE_CLOUD_IDP_URL="https://idp-edgecloud.zapto.org/auth/realms/master"
     fi
 }
 

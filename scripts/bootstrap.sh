@@ -65,7 +65,7 @@ install_docker()
 
 install_go()
 {
-    curl -Lo go.tar.gz https://dl.google.com/go/go1.13.5.linux-amd64.tar.gz
+    curl -Lo go.tar.gz https://dl.google.com/go/go1.14.1.linux-amd64.tar.gz
     sudo rm -rf /usr/local/go
     sudo tar -C /usr/local -xzf go.tar.gz
     rm go.tar.gz
@@ -75,14 +75,14 @@ install_go()
 
 install_kind()
 {
-    curl -Lo ./kind https://github.com/kubernetes-sigs/kind/releases/download/v0.6.1/kind-linux-amd64
+    curl -Lo ./kind https://github.com/kubernetes-sigs/kind/releases/download/v0.7.0/kind-linux-amd64
     chmod +x ./kind
     sudo mv -f ./kind /usr/local/bin/ # Overwrite previous version
 }
 
 install_helm()
 {
-    curl -Lo ./helm.tar.gz https://get.helm.sh/helm-v3.0.2-linux-amd64.tar.gz
+    curl -Lo ./helm.tar.gz https://get.helm.sh/helm-v3.1.2-linux-amd64.tar.gz
     mkdir ./helm
     tar -C ./helm -xzf helm.tar.gz
     sudo mv -f ./helm/linux-amd64/helm /usr/local/bin/ # Overwrite previous version
@@ -92,9 +92,9 @@ install_helm()
 
 install_istioctl()
 {
-    curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.4.2  sh -
-    sudo mv -f istio-1.4.2/bin/istioctl /usr/local/bin/ # Overwrite previous version
-    rm -rf istio-1.4.2
+    curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.5.1  sh -
+    sudo mv -f istio-1.5.1/bin/istioctl /usr/local/bin/ # Overwrite previous version
+    rm -rf istio-1.5.1
 }
 
 install_jq()
@@ -109,7 +109,7 @@ add_helm_repos()
     helm repo add decentralized-cloud https://decentralized-cloud.github.io/helm
 
     # istio repo
-    helm repo add istio.io https://storage.googleapis.com/istio-release/releases/1.4.2/charts/
+    helm repo add istio.io https://storage.googleapis.com/istio-release/releases/1.5.1/charts/
 
     # cert-manager repo
     helm repo add jetstack https://charts.jetstack.io

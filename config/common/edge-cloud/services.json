@@ -1,18 +1,23 @@
 {
     "edge-cluster": {
         "helm_chart_version": "0.1.0",
-        "app_version": "0.1.1"
+        "app_version": "0.1.1",
+        "image_pull_policy": "Always"
     },
     "tenant": {
         "helm_chart_version": "0.1.0",
-        "app_version": "0.1.0"
+        "app_version": "0.1.0",
+        "image_pull_policy": "Always"
     },
     "frontend": {
         "helm_chart_version": "0.1.0",
-        "app_version": "0.1.0"
+        "app_version": "0.1.0",
+        "image_pull_policy": "Always"
     },
     "api-gateway": {
         "helm_chart_version": "0.1.0",
-        "app_version": "0.1.1"
+        "app_version": "0.1.1",
+        "image_pull_policy": "Always"
     }
 }
+

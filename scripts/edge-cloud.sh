@@ -23,10 +23,10 @@ function set_local_variable() {
         # cert-manager
         CERT_MANAGER_KEYPAIR_FILE_PATH=./certificates/ca.key
         CERT_MANAGER_CERTIFICATE_FILE_PATH=./certificates/ca.crt
-        CERT_MANAGER_SELF_SIGNING_CLUSTER_ISSUER_CONFIG=./config/local/istio/self-signing-clusterissuer.yaml
+        CERT_MANAGER_SELF_SIGNING_CLUSTER_ISSUER_CONFIG=./config/local/cert-manager/self-signing-clusterissuer.yaml
+        ISTIO_CERTIFICATES_CONFIG=./config/local/cert-manager/certificates.yaml
 
         # istio
-        ISTIO_CERTIFICATE_CONFIG=./config/local/istio/certificate.yaml
         ISTIO_GATEWAY_HTTPS_CONFIG=./config/local/istio/gateway-https.yaml
         ISTIO_VIRTUALSERVICES_HTTPS_CONFIG=./config/local/istio/virtualservices-https.yaml
 
@@ -40,10 +40,10 @@ function set_local_variable() {
         METALLB_CONFIG=./config/local-demo-server/metallb_config.yaml
 
         # cert-manager
-        CERT_MANAGER_LETSENCRYPT_CLUSTER_ISSUER_CONFIG=./config/local-demo-server/istio/letsencrypt-clusterissuer.yaml
+        CERT_MANAGER_LETSENCRYPT_CLUSTER_ISSUER_CONFIG=./config/local-demo-server/cert-manager/letsencrypt-clusterissuer.yaml
+        ISTIO_CERTIFICATES_CONFIG=./config/local-demo-server/cert-manager/certificates.yaml
 
         # istio
-        ISTIO_CERTIFICATE_CONFIG=./config/local-demo-server/istio/certificate.yaml
         ISTIO_GATEWAY_HTTP_CONFIG=./config/local-demo-server/istio/gateway-http.yaml
         ISTIO_GATEWAY_HTTPS_CONFIG=./config/local-demo-server/istio/gateway-https.yaml
         ISTIO_VIRTUALSERVICES_HTTP_CONFIG=./config/local-demo-server/istio/virtualservices-http.yaml
@@ -183,14 +183,14 @@ function apply_edge_cloud_config() {
     fi
 
     if [ "$ENVIRONMENT" = "LOCAL_DEMO_SERVER" ]; then
-        kubectl apply -n edge -f <(istioctl kube-inject -f "$ISTIO_GATEWAY_HTTP_CONFIG")
-        kubectl apply -n edge -f <(istioctl kube-inject -f "$ISTIO_VIRTUALSERVICES_HTTP_CONFIG")
+        kubectl apply -n edge -f "$ISTIO_CERTIFICATES_CONFIG"
+    else
+        kubectl apply -n istio-system -f "$ISTIO_CERTIFICATES_CONFIG"
     fi
 
     if [ "$ENVIRONMENT" = "LOCAL_DEMO_SERVER" ]; then
-        kubectl apply -n istio-system -f "$ISTIO_CERTIFICATE_CONFIG"
-    else
-        kubectl apply -n edge -f "$ISTIO_CERTIFICATE_CONFIG"
+        kubectl apply -n edge -f <(istioctl kube-inject -f "$ISTIO_GATEWAY_HTTP_CONFIG")
+        kubectl apply -n edge -f <(istioctl kube-inject -f "$ISTIO_VIRTUALSERVICES_HTTP_CONFIG")
     fi
 
     kubectl apply -n edge -f <(istioctl kube-inject -f "$ISTIO_GATEWAY_HTTPS_CONFIG")
@@ -300,6 +300,7 @@ function remove_services() {
 function deploy_a_service() {
     helm_chart_version="$(jq -r '."'"$2"'".helm_chart_version' < "$1")"
     app_version="$(jq -r '."'"$2"'".app_version' < "$1")"
+    image_pull_policy="$(jq -r '."'"$2"'".image_pull_policy' < "$1")"
 
     echo -e "\nInstalling helm chart for $2 helm_chart_version=$helm_chart_version app_version=$app_version\n"
 
@@ -308,13 +309,14 @@ function deploy_a_service() {
         -n edge \
         --version "$helm_chart_version" \
         --set image.version="$app_version" \
-        --set image.pullPolicy="Always" \
+        --set image.pullPolicy=$image_pull_policy \
         --wait
 }
 
 function deploy_frontend_service() {
     helm_chart_version="$(jq -r '."'"frontend"'".helm_chart_version' < "$1")"
     app_version="$(jq -r '."'"frontend"'".app_version' < "$1")"
+    image_pull_policy="$(jq -r '."'"frontend"'".image_pull_policy' < "$1")"
 
     echo -e "\nInstalling helm chart for frontend helm_chart_version=$helm_chart_version app_version=$app_version\n"
 
@@ -322,7 +324,7 @@ function deploy_frontend_service() {
         -n edge \
         --version "$helm_chart_version" \
         --set image.version="$app_version" \
-        --set image.pullPolicy="Always" \
+        --set image.pullPolicy=$image_pull_policy \
         --set pod.apiGateway.url="$EDGE_CLOUD_API_GATEWAY_URL" \
         --set pod.idp.clientAuthorityUrl="$EDGE_CLOUD_IDP_URL" \
         --set pod.idp.clientId="edge-cloud" \

@@ -108,7 +108,7 @@ add_helm_repos()
     helm repo add stable https://kubernetes-charts.storage.googleapis.com/
     helm repo add decentralized-cloud https://decentralized-cloud.github.io/helm
 
-    # mongodb chart
+    # mongodb repo
     helm repo add bitnami https://charts.bitnami.com/bitnami
 
     # istio repo

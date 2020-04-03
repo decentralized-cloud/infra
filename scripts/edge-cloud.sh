@@ -23,12 +23,12 @@ function set_local_variable() {
         # cert-manager
         CERT_MANAGER_KEYPAIR_FILE_PATH=./certificates/ca.key
         CERT_MANAGER_CERTIFICATE_FILE_PATH=./certificates/ca.crt
-        CERT_MANAGER_SELF_SIGNING_CLUSTER_ISSUER_CONFIG=./config/local/cert-manager/self-signing-clusterissuer.yaml
+        CERT_MANAGER_SELF_SIGNING_CLUSTER_ISSUER_CONFIG=./config/local/istio/self-signing-clusterissuer.yaml
 
         # istio
-        ISTIO_CERTIFICATE_CONFIG=./config/local/cert-manager/certificate.yaml
-        ISTIO_GATEWAY_CONFIG=./config/local/istio/gateway.yaml
-        ISTIO_VIRTUALSERVICES_CONFIG=./config/local/istio/virtualservices.yaml
+        ISTIO_CERTIFICATE_CONFIG=./config/local/istio/certificate.yaml
+        ISTIO_GATEWAY_HTTPS_CONFIG=./config/local/istio/gateway-https.yaml
+        ISTIO_VIRTUALSERVICES_HTTPS_CONFIG=./config/local/istio/virtualservices-https.yaml
 
         # edge-cloud
         EDGE_CLOUD_API_GATEWAY_URL="https://api.edge-cloud.com/graphql"
@@ -55,19 +55,31 @@ function set_local_variable() {
     fi
 }
 
-function create_and_configure_namespaces() {
-    kubectl create namespace metallb-system
+function setup_cluster() {
+    if [ "$ENVIRONMENT" = "" ] || [ "$ENVIRONMENT" = "LOCAL_KIND" ]; then
+        kind create cluster --config "$KIND_CONFIG" --wait 5m # Block until control plane is ready
+    else
+        sudo kubeadm init --pod-network-cidr=172.16.0.0/16 --apiserver-advertise-address=192.168.1.3
 
-    kubectl create namespace istio-system
+        mkdir -p "$HOME"/.kube
+        sudo cp /etc/kubernetes/admin.conf "$HOME"/.kube/config
+        sudo chown "$(id -u)":"$(id -g)" "$HOME"/.kube/config
 
-    kubectl create namespace cert-manager
-
-    kubectl create namespace edge
-    kubectl label namespace edge istio-injection=enabled
+        kubectl taint nodes --all node-role.kubernetes.io/master-
+        deploy_calico
+    fi
 }
 
 function deploy_calico() {
     kubectl apply -f "$DEMO_SERVER_CALICO"
+}
+
+function create_and_configure_namespaces() {
+    kubectl create namespace metallb-system
+    kubectl create namespace istio-system
+    kubectl create namespace cert-manager
+    kubectl create namespace edge
+    kubectl label namespace edge istio-injection=enabled
 }
 
 function deploy_metallb() {
@@ -87,10 +99,10 @@ function deploy_kubernetes_dashboard() {
 }
 
 function deploy_cert_manager() {
-    kubectl apply -f https://raw.githubusercontent.com/jetstack/cert-manager/release-0.12/deploy/manifests/00-crds.yaml
+    kubectl apply -f https://raw.githubusercontent.com/jetstack/cert-manager/release-0.14/deploy/manifests/00-crds.yaml
     helm install cert-manager \
         jetstack/cert-manager \
-        --version v0.12.0 \
+        --version v0.14.1 \
         -n cert-manager \
         --wait
 }
@@ -98,21 +110,18 @@ function deploy_cert_manager() {
 function deploy_istio() {
     helm install istio-init \
         istio.io/istio-init \
-        --set app-version="1.4.2" \
+        --set app-version="1.5.1" \
         -n istio-system \
         --wait
 
     kubectl wait \
-        --for=condition=complete \
-        job/istio-init-crd-10-1.4.2 \
-        job/istio-init-crd-11-1.4.2 \
-        job/istio-init-crd-14-1.4.2  \
+        --for=condition=complete job --all \
         -n istio-system
 
     if [ "$ENVIRONMENT" = "" ] || [ "$ENVIRONMENT" = "LOCAL_KIND" ]; then
         helm install istio \
             istio.io/istio \
-            --set app-version="1.4.2" \
+            --set app-version="1.5.1" \
             --set global.mtls.enabled=true \
             --set global.controlPlaneSecurityEnabled=true \
             --set global.configValidation=false \
@@ -126,7 +135,7 @@ function deploy_istio() {
     else
         helm install istio \
             istio.io/istio \
-            --set app-version="1.4.2" \
+            --set app-version="1.5.1" \
             --set global.mtls.enabled=true \
             --set global.controlPlaneSecurityEnabled=true \
             --set global.configValidation=false \
@@ -147,7 +156,7 @@ function deploy_istio() {
 
 function deploy_mongodb() {
     helm install mongodb \
-        stable/mongodb \
+        bitnami/mongodb \
         --set volumePermissions.enabled=true \
         --set usePassword=false \
         --set persistence.enabled=false \
@@ -178,7 +187,11 @@ function apply_edge_cloud_config() {
         kubectl apply -n edge -f <(istioctl kube-inject -f "$ISTIO_VIRTUALSERVICES_HTTP_CONFIG")
     fi
 
-    kubectl apply -n edge -f "$ISTIO_CERTIFICATE_CONFIG"
+    if [ "$ENVIRONMENT" = "LOCAL_DEMO_SERVER" ]; then
+        kubectl apply -n istio-system -f "$ISTIO_CERTIFICATE_CONFIG"
+    else
+        kubectl apply -n edge -f "$ISTIO_CERTIFICATE_CONFIG"
+    fi
 
     kubectl apply -n edge -f <(istioctl kube-inject -f "$ISTIO_GATEWAY_HTTPS_CONFIG")
     kubectl apply -n edge -f <(istioctl kube-inject -f "$ISTIO_VIRTUALSERVICES_HTTPS_CONFIG")
@@ -201,28 +214,15 @@ function generate_local_self_signed_certificate() {
 }
 
 function start() {
-    if [ "$ENVIRONMENT" = "" ] || [ "$ENVIRONMENT" = "LOCAL_KIND" ]; then
-        kind create cluster --config "$KIND_CONFIG" --wait 5m # Block until control plane is ready
-    else
-        sudo kubeadm init --pod-network-cidr=172.16.0.0/16 --apiserver-advertise-address=192.168.1.3
-
-        mkdir -p "$HOME"/.kube
-        sudo cp /etc/kubernetes/admin.conf "$HOME"/.kube/config
-        sudo chown "$(id -u)":"$(id -g)" "$HOME"/.kube/config
-
-        kubectl taint nodes --all node-role.kubernetes.io/master-
-        deploy_calico
-    fi
-
+    setup_cluster
     create_and_configure_namespaces
     deploy_metallb
     deploy_kubernetes_dashboard
     deploy_cert_manager
     deploy_istio
 
-    # deploying mongodb, make sure you deploy after istio deployment is done, so it inject sidecar for mongodb
+    # all other services must be deployed after istio is successfully deployed to ensure it inject sidecar for them all
     deploy_mongodb
-
     deploy_keycloak
     apply_edge_cloud_config
 
@@ -291,10 +291,10 @@ function deploy_services() {
 
 function remove_services() {
     for service in $EDGE_SERVICES; do
-        helm uninstall "$service" -n edge
+        helm uninstall "$service" -n edge || true
     done
 
-    helm uninstall "frontend" -n edge
+    helm uninstall "frontend" -n edge || true
 }
 
 function deploy_a_service() {
@@ -307,7 +307,7 @@ function deploy_a_service() {
         decentralized-cloud/"$2" \
         -n edge \
         --version "$helm_chart_version" \
-        --set app-version="$app_version" \
+        --set image.version="$app_version" \
         --set image.pullPolicy="Always" \
         --wait
 }
@@ -321,7 +321,7 @@ function deploy_frontend_service() {
     helm install "frontend" decentralized-cloud/"frontend" \
         -n edge \
         --version "$helm_chart_version" \
-        --set app-version="$app_version" \
+        --set image.version="$app_version" \
         --set image.pullPolicy="Always" \
         --set pod.apiGateway.url="$EDGE_CLOUD_API_GATEWAY_URL" \
         --set pod.idp.clientAuthorityUrl="$EDGE_CLOUD_IDP_URL" \

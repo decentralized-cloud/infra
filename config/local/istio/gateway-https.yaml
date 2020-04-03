@@ -14,7 +14,7 @@ spec:
         number: 443
         protocol: HTTPS
       tls:
-        credentialName: edge-cloud-com-tls
+        credentialName: edge-cloud-com
         mode: SIMPLE
         privateKey: sds
         serverCertificate: sds
@@ -26,7 +26,7 @@ spec:
         number: 443
         protocol: HTTPS
       tls:
-        credentialName: api-edge-cloud-com-tls
+        credentialName: api-edge-cloud-com
         mode: SIMPLE
         privateKey: sds
         serverCertificate: sds
@@ -38,7 +38,7 @@ spec:
         number: 443
         protocol: HTTPS
       tls:
-        credentialName: idp-edge-cloud-com-tls
+        credentialName: idp-edge-cloud-com
         mode: SIMPLE
         privateKey: sds
         serverCertificate: sds

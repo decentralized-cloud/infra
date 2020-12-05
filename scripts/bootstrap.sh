@@ -10,22 +10,16 @@ install_curl()
     # install curl dependencies
     sudo apt-get install \
         -y \
-        --allow-unauthenticated \
-        --no-install-recommends \
         curl
 }
 
 install_kubectl()
 {
-    sudo apt-get update && sudo apt-get install -y apt-transport-https curl
+    sudo apt-get update && sudo apt-get install -y apt-transport-https gnupg2 curl
     curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
-
-    cat <<EOF | sudo tee /etc/apt/sources.list.d/kubernetes.list
-deb https://apt.kubernetes.io/ kubernetes-xenial main
-EOF
-
+    echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee -a /etc/apt/sources.list.d/kubernetes.list
     sudo apt-get update
-    sudo apt-get install -y kubelet kubeadm kubectl
+    sudo apt-get install -y kubectl kubelet kubeadm
 }
 
 install_docker()
@@ -33,26 +27,35 @@ install_docker()
     # install docker dependencies
     sudo apt-get install \
         -y \
-        --allow-unauthenticated \
-        --no-install-recommends \
         apt-transport-https \
         ca-certificates \
+        gnupg-agent \
         software-properties-common
 
     # Install docker
     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
 
-    # TODO: 13/10/2019 - Morteza, we either use Linux Mint or Arch Linux as our development environment. For those using Linux Mint, following command
-    # won't work. Instead of running "lsb_release -cs", we need to retrieve UBUNTU_CODENAME from /etc/os-release
-    sudo add-apt-repository \
-        "deb https://download.docker.com/linux/ubuntu \
+    dist_id=$(lsb_release -is)
+
+    if [[ "$dist_id" == "Linuxmint" ]]; then
+        sudo add-apt-repository \
+            "deb https://download.docker.com/linux/ubuntu \
+        $(awk -F= '$1=="UBUNTU_CODENAME" { print $2 ;}' /etc/os-release) \
+            stable"
+    elif [[ "$dist_id" == "Ubuntu" ]]; then
+        sudo add-apt-repository \
+            "deb https://download.docker.com/linux/ubuntu \
         $(lsb_release -cs) \
-        stable"
+            stable"
+    else
+        echo "Distro $dist_id is not supported to install docker on"
+        exit 1
+    fi
+
 
     # TODO Pin docker version
     sudo apt-get install \
         -y \
-        --allow-unauthenticated \
         docker-ce \
         docker-ce-cli \
         containerd.io
@@ -65,7 +68,7 @@ install_docker()
 
 install_go()
 {
-    curl -Lo go.tar.gz https://dl.google.com/go/go1.14.1.linux-amd64.tar.gz
+    curl -Lo go.tar.gz https://dl.google.com/go/go1.15.6.linux-amd64.tar.gz
     sudo rm -rf /usr/local/go
     sudo tar -C /usr/local -xzf go.tar.gz
     rm go.tar.gz
@@ -75,26 +78,24 @@ install_go()
 
 install_kind()
 {
-    curl -Lo ./kind https://github.com/kubernetes-sigs/kind/releases/download/v0.7.0/kind-linux-amd64
+    curl -Lo ./kind https://github.com/kubernetes-sigs/kind/releases/download/v0.9.0/kind-linux-amd64
     chmod +x ./kind
     sudo mv -f ./kind /usr/local/bin/ # Overwrite previous version
 }
 
 install_helm()
 {
-    curl -Lo ./helm.tar.gz https://get.helm.sh/helm-v3.1.2-linux-amd64.tar.gz
-    mkdir ./helm
-    tar -C ./helm -xzf helm.tar.gz
-    sudo mv -f ./helm/linux-amd64/helm /usr/local/bin/ # Overwrite previous version
-    rm -rf ./helm
-    rm -rf helm.tar.gz
+    curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3
+    chmod 700 get_helm.sh
+    ./get_helm.sh
+    rm -f get_helm.sh
 }
 
 install_istioctl()
 {
-    curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.5.1  sh -
-    sudo mv -f istio-1.5.1/bin/istioctl /usr/local/bin/ # Overwrite previous version
-    rm -rf istio-1.5.1
+    curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.6.14  sh -
+    sudo mv -f istio-1.6.14/bin/istioctl /usr/local/bin/ # Overwrite previous version
+    rm -rf istio-1.6.14
 }
 
 install_jq()
@@ -105,7 +106,7 @@ install_jq()
 add_helm_repos()
 {
     # Add helm stable repo and decentralized-cloud repo
-    helm repo add stable https://kubernetes-charts.storage.googleapis.com/
+    helm repo add stable https://charts.helm.sh/stable
     helm repo add decentralized-cloud https://decentralized-cloud.github.io/helm
 
     # mongodb repo
@@ -150,7 +151,7 @@ for dep in $dependencies; do
         install_"$dep"
         echo "Finished installing $dep"
     elif [ $force = true ]; then
-        if [[ "kubectl helm istioctl kind go" == *"$dep"* ]]; then
+        if [[ "curl kubectl helm istioctl kind go" == *"$dep"* ]]; then
             echo "Force installing $dep"
             install_"$dep"
             echo "Finished installing $dep"

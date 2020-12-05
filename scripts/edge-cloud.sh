@@ -84,18 +84,19 @@ function create_and_configure_namespaces() {
 
 function deploy_metallb() {
     helm install metallb \
-        stable/metallb \
-        --version v0.12.0 \
-        --set app-version=0.8.3 \
+        bitnami/metallb \
+        --version v1.0.1 \
+        --set app-version=0.9.5 \
         -n metallb-system \
         --wait
     kubectl apply -f "$METALLB_CONFIG" -n metallb-system
 }
 
 function deploy_kubernetes_dashboard() {
-    kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0-beta8/aio/deploy/recommended.yaml
+    kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0/aio/deploy/recommended.yaml
     kubectl apply -f "$K8S_DASHBOARD_SERVICE_ACCOUNT_CONFIG"
     kubectl apply -f "$K8S_DASHBOARD_ROLE_CONFIG"
+    kubectl -n kubernetes-dashboard describe secret $(kubectl -n kubernetes-dashboard get secret | grep admin-user | awk '{print $1}')
 }
 
 function deploy_cert_manager() {

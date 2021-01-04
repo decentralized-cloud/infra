@@ -76,8 +76,8 @@ function deploy_calico() {
 
 function create_and_configure_namespaces() {
     kubectl create namespace metallb-system
-    kubectl create namespace istio-system
     kubectl create namespace cert-manager
+    kubectl create namespace istio-system
     kubectl create namespace edge
     kubectl label namespace edge istio-injection=enabled
 }

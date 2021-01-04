@@ -93,9 +93,9 @@ install_helm()
 
 install_istioctl()
 {
-    curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.6.14  sh -
-    sudo mv -f istio-1.6.14/bin/istioctl /usr/local/bin/ # Overwrite previous version
-    rm -rf istio-1.6.14
+    curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.7.6  sh -
+    sudo mv -f istio-1.7.6/bin/istioctl /usr/local/bin/ # Overwrite previous version
+    rm -rf istio-1.7.6
 }
 
 install_jq()

@@ -58,6 +58,35 @@ function set_local_variable() {
 function setup_cluster() {
     if [ "$ENVIRONMENT" = "" ] || [ "$ENVIRONMENT" = "LOCAL_KIND" ]; then
         kind create cluster --config "$KIND_CONFIG" --wait 5m # Block until control plane is ready
+
+        declare -a DockerImagesToPreload=(
+            "kubernetesui/metrics-scraper:v1.0.4"
+            "kubernetesui/dashboard:v2.0.0"
+
+            "docker.io/bitnami/metallb-controller:0.9.5-debian-10-r5"
+            "docker.io/bitnami/metallb-speaker:0.9.5-debian-10-r4"
+
+            "quay.io/jetstack/cert-manager-controller:v0.14.1"
+            "quay.io/jetstack/cert-manager-cainjector:v0.14.1"
+            "quay.io/jetstack/cert-manager-webhook:v0.14.1"
+
+            "docker.io/istio/citadel:1.5.1"
+            "docker.io/istio/kubectl:1.5.1"
+            "docker.io/istio/pilot:1.5.1"
+            "docker.io/istio/mixer:1.5.1"
+            "quay.io/kiali/kiali:v1.9"
+            "docker.io/istio/proxyv2:1.5.1"
+            "docker.io/istio/galley:1.5.1"
+            "docker.io/istio/node-agent-k8s:1.5.1"
+            "docker.io/istio/proxyv2:1.5.1"
+            "docker.io/istio/sidecar_injector:1.5.1"
+            "docker.io/prom/prometheus:v2.12.0"
+        )
+
+        for dockerImage in "${DockerImagesToPreload[@]}"; do
+            docker pull "$dockerImage"
+            kind load docker-image "$dockerImage"
+        done
     else
         sudo kubeadm init --pod-network-cidr=172.16.0.0/16 --apiserver-advertise-address=192.168.1.3
 

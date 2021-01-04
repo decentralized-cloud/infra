@@ -13,10 +13,32 @@ EDGE_CLOUD_SERVICES_CONFIG=./config/common/edge-cloud/services.json
 K8S_DASHBOARD_SERVICE_ACCOUNT_CONFIG=./config/common/k8s-dashboard/service-account.yaml
 K8S_DASHBOARD_ROLE_CONFIG=./config/common/k8s-dashboard/role.yaml
 
+declare -a DockerImagesToPreload=(
+    "kubernetesui/metrics-scraper:v1.0.4"
+    "kubernetesui/dashboard:v2.0.0"
+
+    "docker.io/bitnami/metallb-controller:0.9.5-debian-10-r62"
+    "docker.io/bitnami/metallb-speaker:0.9.5-debian-10-r67"
+
+    "quay.io/jetstack/cert-manager-controller:v1.1.0"
+    "quay.io/jetstack/cert-manager-cainjector:v1.1.0"
+    "quay.io/jetstack/cert-manager-webhook:v1.1.0"
+
+    "docker.io/istio/operator:1.7.6"
+    "docker.io/istio/proxyv2:1.7.6"
+    "docker.io/istio/pilot:1.7.6"
+    "quay.io/kiali/kiali:v1.26"
+    "openzipkin/zipkin-slim:2.21.0"
+    "grafana/grafana:7.2.1"
+    "docker.io/jaegertracing/all-in-one:1.20"
+    "jimmidyson/configmap-reload:v0.4.0"
+    "prom/prometheus:v2.21.0"
+
+    "docker.io/bitnami/mongodb:4.4.3-debian-10-r0"
+)
+
 function set_local_variable() {
     if [ "$ENVIRONMENT" = "" ] || [ "$ENVIRONMENT" = "LOCAL_KIND" ]; then
-        KIND_CONFIG="${KIND_CONFIG:-./config/local/kind_config.yaml}"
-
         # metallb
         METALLB_CONFIG=./config/local/metallb_config.yaml
 
@@ -55,36 +77,18 @@ function set_local_variable() {
     fi
 }
 
+function pull_latest_docker_images() {
+    for dockerImage in "${DockerImagesToPreload[@]}"; do
+        docker pull "$dockerImage"
+    done
+}
+
 function setup_cluster() {
     if [ "$ENVIRONMENT" = "" ] || [ "$ENVIRONMENT" = "LOCAL_KIND" ]; then
+        KIND_CONFIG="${KIND_CONFIG:-./config/local/kind_config.yaml}"
         kind create cluster --config "$KIND_CONFIG" --wait 5m # Block until control plane is ready
 
-        declare -a DockerImagesToPreload=(
-            "kubernetesui/metrics-scraper:v1.0.4"
-            "kubernetesui/dashboard:v2.0.0"
-
-            "docker.io/bitnami/metallb-controller:0.9.5-debian-10-r5"
-            "docker.io/bitnami/metallb-speaker:0.9.5-debian-10-r4"
-
-            "quay.io/jetstack/cert-manager-controller:v0.14.1"
-            "quay.io/jetstack/cert-manager-cainjector:v0.14.1"
-            "quay.io/jetstack/cert-manager-webhook:v0.14.1"
-
-            "docker.io/istio/citadel:1.5.1"
-            "docker.io/istio/kubectl:1.5.1"
-            "docker.io/istio/pilot:1.5.1"
-            "docker.io/istio/mixer:1.5.1"
-            "quay.io/kiali/kiali:v1.9"
-            "docker.io/istio/proxyv2:1.5.1"
-            "docker.io/istio/galley:1.5.1"
-            "docker.io/istio/node-agent-k8s:1.5.1"
-            "docker.io/istio/proxyv2:1.5.1"
-            "docker.io/istio/sidecar_injector:1.5.1"
-            "docker.io/prom/prometheus:v2.12.0"
-        )
-
         for dockerImage in "${DockerImagesToPreload[@]}"; do
-            docker pull "$dockerImage"
             kind load docker-image "$dockerImage"
         done
     else
@@ -108,14 +112,13 @@ function create_and_configure_namespaces() {
     kubectl create namespace cert-manager
     kubectl create namespace istio-system
     kubectl create namespace edge
+
     kubectl label namespace edge istio-injection=enabled
 }
 
 function deploy_metallb() {
     helm install metallb \
         bitnami/metallb \
-        --version v1.0.1 \
-        --set app-version=0.9.5 \
         -n metallb-system \
         --wait
     kubectl apply -f "$METALLB_CONFIG" -n metallb-system
@@ -129,58 +132,67 @@ function deploy_kubernetes_dashboard() {
 }
 
 function deploy_cert_manager() {
-    kubectl apply -f https://raw.githubusercontent.com/jetstack/cert-manager/release-0.14/deploy/manifests/00-crds.yaml
-    helm install cert-manager \
-        jetstack/cert-manager \
-        --version v0.14.1 \
-        -n cert-manager \
+    helm install \
+        cert-manager jetstack/cert-manager \
+        --namespace cert-manager \
+        --version v1.1.0 \
+        --set installCRDs=true \
         --wait
 }
 
 function deploy_istio() {
-    helm install istio-init \
-        istio.io/istio-init \
-        --set app-version="1.5.1" \
-        -n istio-system \
-        --wait
+    istioctl operator init
+    kubectl apply -f ./config/local/istio/istio.yaml
 
-    kubectl wait \
-        --for=condition=complete job --all \
-        -n istio-system
+    # helm install istio-init \
+        #     istio.io/istio-init \
+        #     --set app-version="1.5.1" \
+        #     -n istio-system \
+        #     --wait
 
-    if [ "$ENVIRONMENT" = "" ] || [ "$ENVIRONMENT" = "LOCAL_KIND" ]; then
-        helm install istio \
-            istio.io/istio \
-            --set app-version="1.5.1" \
-            --set global.mtls.enabled=true \
-            --set global.controlPlaneSecurityEnabled=true \
-            --set global.configValidation=false \
-            --set global.proxy.accessLogFile="/dev/stdout" \
-            --set kiali.enabled=true \
-            --set gateways.istio-ingressgateway.sds.enabled=true \
-            --set gateways.istio-egressgateway.enabled=true \
-            --set sidecarInjectorWebhook.rewriteAppHTTPProbe=true \
-            -n istio-system \
-            --wait
-    else
-        helm install istio \
-            istio.io/istio \
-            --set app-version="1.5.1" \
-            --set global.mtls.enabled=true \
-            --set global.controlPlaneSecurityEnabled=true \
-            --set global.configValidation=false \
-            --set global.proxy.accessLogFile="/dev/stdout" \
-            --set kiali.enabled=true \
-            --set gateways.istio-ingressgateway.sds.enabled=true \
-            --set gateways.istio-egressgateway.enabled=true \
-            --set sidecarInjectorWebhook.rewriteAppHTTPProbe=true \
-            --set mixer.telemetry.enabled=false \
-            -n istio-system \
-            --wait
-    fi
+    # kubectl wait \
+        #     --for=condition=complete job --all \
+        #     -n istio-system
 
-    # deploying Kiali dashboard
-    kubectl apply -f "$ISTIO_KIALI_SECRET_CONFIG"
+    # if [ "$ENVIRONMENT" = "" ] || [ "$ENVIRONMENT" = "LOCAL_KIND" ]; then
+    #     helm install istio \
+        #         istio.io/istio \
+        #         --set app-version="1.5.1" \
+        #         --set global.mtls.enabled=true \
+        #         --set global.controlPlaneSecurityEnabled=true \
+        #         --set global.configValidation=false \
+        #         --set global.proxy.accessLogFile="/dev/stdout" \
+        #         --set kiali.enabled=true \
+        #         --set gateways.istio-ingressgateway.sds.enabled=true \
+        #         --set gateways.istio-egressgateway.enabled=true \
+        #         --set sidecarInjectorWebhook.rewriteAppHTTPProbe=true \
+        #         -n istio-system \
+        #         --wait
+    # else
+    #     helm install istio \
+        #         istio.io/istio \
+        #         --set app-version="1.5.1" \
+        #         --set global.mtls.enabled=true \
+        #         --set global.controlPlaneSecurityEnabled=true \
+        #         --set global.configValidation=false \
+        #         --set global.proxy.accessLogFile="/dev/stdout" \
+        #         --set kiali.enabled=true \
+        #         --set gateways.istio-ingressgateway.sds.enabled=true \
+        #         --set gateways.istio-egressgateway.enabled=true \
+        #         --set sidecarInjectorWebhook.rewriteAppHTTPProbe=true \
+        #         --set mixer.telemetry.enabled=false \
+        #         -n istio-system \
+        #         --wait
+    # fi
+}
+
+function deploy_istio_addons() {
+    kubectl apply -f ./istio/samples/addons/grafana.yaml
+    kubectl apply -f ./istio/samples/addons/jaeger.yaml
+    kubectl apply -f ./istio/samples/addons/prometheus.yaml
+    kubectl apply -f ./istio/samples/addons/kiali.yaml
+    kubectl apply -f ./istio/samples/addons/extras/zipkin.yaml
+
     echo "Enter 'istioctl dashboard kiali' to access kiali dashboard"
 }
 
@@ -188,18 +200,8 @@ function deploy_mongodb() {
     helm install mongodb \
         bitnami/mongodb \
         --set volumePermissions.enabled=true \
-        --set usePassword=false \
+        --set auth.enabled=false \
         --set persistence.enabled=false \
-        -n edge \
-        --wait
-}
-
-function deploy_keycloak() {
-    helm install keycloak codecentric/keycloak \
-        --set keycloak.password=password \
-        --set keycloak.persistence.deployPostgres=true \
-        --set keycloak.persistence.dbVendor=postgres \
-        --set postgresql.postgresPassword=password \
         -n edge \
         --wait
 }
@@ -219,12 +221,12 @@ function apply_edge_cloud_config() {
     fi
 
     if [ "$ENVIRONMENT" = "LOCAL_DEMO_SERVER" ]; then
-        kubectl apply -n edge -f <(istioctl kube-inject -f "$ISTIO_GATEWAY_HTTP_CONFIG")
-        kubectl apply -n edge -f <(istioctl kube-inject -f "$ISTIO_VIRTUALSERVICES_HTTP_CONFIG")
+        istioctl kube-inject -f "$ISTIO_GATEWAY_HTTP_CONFIG" | kubectl apply -n edge -f -
+        istioctl kube-inject -f "$ISTIO_VIRTUALSERVICES_HTTP_CONFIG" | kubectl apply -n edge -f -
     fi
 
-    kubectl apply -n edge -f <(istioctl kube-inject -f "$ISTIO_GATEWAY_HTTPS_CONFIG")
-    kubectl apply -n edge -f <(istioctl kube-inject -f "$ISTIO_VIRTUALSERVICES_HTTPS_CONFIG")
+    istioctl kube-inject -f "$ISTIO_GATEWAY_HTTPS_CONFIG" | kubectl apply -n edge -f -
+    istioctl kube-inject -f "$ISTIO_VIRTUALSERVICES_HTTPS_CONFIG" | kubectl apply -n edge -f -
 }
 
 function print_help() {
@@ -232,11 +234,13 @@ function print_help() {
 
     echo -e "Usage: $1 [command]\n"
     echo "Available Commands:"
+    echo -e "\t pull_latest_docker_images \n\t\t Pull down latest required docker images"
     echo -e "\t generate_local_self_signed_certificate \n\t\t Generate new set of local self-signed certificates"
     echo -e "\t start \n\t\t Start K8s cluster"
     echo -e "\t stop \n\t\t Stop K8s cluster"
     echo -e "\t deploy_services <config config_path>\n\t\t Deploy all edge services"
     echo -e "\t remove_services \n\t\t Remove all edge services"
+    echo -e "\t deploy_istio_addons \n\t\t Deploy istio addons"
 }
 
 function generate_local_self_signed_certificate() {
@@ -253,14 +257,13 @@ function start() {
 
     # all other services must be deployed after istio is successfully deployed to ensure it inject sidecar for them all
     deploy_mongodb
-    deploy_keycloak
     apply_edge_cloud_config
 
     if [ "$ENVIRONMENT" = "" ] || [ "$ENVIRONMENT" = "LOCAL_KIND" ]; then
         echo "You need to make sure edge-cloud.com is added to your /etc/hosts file locally"
-        echo "If you are using kind, you most likely got 172.17.255.1 as its IP address"
+        echo "If you are using kind, you most likely got 172.18.255.1 as its IP address"
         echo "Add following line to your /etc/hosts file:"
-        echo "172.17.255.1 edge-cloud.com"
+        echo "172.18.255.1 edge-cloud.com"
     fi
 }
 
@@ -369,7 +372,7 @@ fi
 set_local_variable
 
 case $1 in
-    generate_local_self_signed_certificate|start|stop|remove_services) "$1" ;;
+    pull_latest_docker_images|generate_local_self_signed_certificate|start|stop|remove_services|deploy_istio_addons) "$1" ;;
     deploy_services) "$1" "${@:2}" ;;
     *) print_help "$0" ;;
 esac

@@ -105,21 +105,17 @@ install_jq()
 
 add_helm_repos()
 {
-    # Add helm stable repo and decentralized-cloud repo
+    # Add helm stable repo repo
     helm repo add stable https://charts.helm.sh/stable
+
+    # Add decentralized-cloud repo
     helm repo add decentralized-cloud https://decentralized-cloud.github.io/helm
 
     # mongodb repo
     helm repo add bitnami https://charts.bitnami.com/bitnami
 
-    # istio repo
-    helm repo add istio.io https://storage.googleapis.com/istio-release/releases/1.5.1/charts/
-
     # cert-manager repo
     helm repo add jetstack https://charts.jetstack.io
-
-    # keycloak repo
-    helm repo add codecentric https://codecentric.github.io/helm-charts
 
     helm repo update
 }

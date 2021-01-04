@@ -43,26 +43,3 @@ spec:
             host: api-gateway.edge.svc.cluster.local
             port:
               number: 80
----
-apiVersion: networking.istio.io/v1alpha3
-kind: VirtualService
-metadata:
-  name: idp-edge-cloud-https
-spec:
-  hosts:
-    - idp-edgecloud.zapto.org
-  gateways:
-    - edge-cloud-gateway-https
-  http:
-    -
-      match:
-        -
-          uri:
-            prefix: /
-      ignoreUriCase: true
-      route:
-        -
-          destination:
-            host: keycloak-http.edge.svc.cluster.local
-            port:
-              number: 80

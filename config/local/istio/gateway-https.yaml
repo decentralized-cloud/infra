@@ -4,7 +4,7 @@ metadata:
   name: edge-cloud-gateway
 spec:
   selector:
-    istio: ingressgateway
+    istio: ingressgateway # use istio default controller
   servers:
     -
       hosts:
@@ -27,18 +27,6 @@ spec:
         protocol: HTTPS
       tls:
         credentialName: api-edge-cloud-com
-        mode: SIMPLE
-        privateKey: sds
-        serverCertificate: sds
-    -
-      hosts:
-        - idp.edge-cloud.com
-      port:
-        name: https-443-idp-edge-cloud-com
-        number: 443
-        protocol: HTTPS
-      tls:
-        credentialName: idp-edge-cloud-com
         mode: SIMPLE
         privateKey: sds
         serverCertificate: sds

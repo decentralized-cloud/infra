@@ -1,12 +1,12 @@
 {
     "edge-cluster": {
         "helm_chart_version": "0.1.0",
-        "app_version": "0.3.0",
+        "app_version": "0.3.2",
         "image_pull_policy": "Always"
     },
     "tenant": {
         "helm_chart_version": "0.1.0",
-        "app_version": "0.3.0",
+        "app_version": "0.3.2",
         "image_pull_policy": "Always"
     },
     "frontend": {
@@ -16,7 +16,7 @@
     },
     "api-gateway": {
         "helm_chart_version": "0.1.0",
-        "app_version": "0.2.0",
+        "app_version": "0.2.2",
         "image_pull_policy": "Always"
     }
 }

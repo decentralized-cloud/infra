@@ -35,6 +35,12 @@ declare -a DockerImagesToPreload=(
     "prom/prometheus:v2.21.0"
 
     "docker.io/bitnami/mongodb:4.4.3-debian-10-r0"
+
+    "rancher/k3s:v1.20.0-k3s2"
+    "decentralizedcloud/tenant:0.3.2"
+    "decentralizedcloud/edge-cluster:0.3.2"
+    "decentralizedcloud/api-gateway:0.2.2"
+    "decentralizedcloud/frontend:0.1.1"
 )
 
 function set_local_variable() {
@@ -143,47 +149,6 @@ function deploy_cert_manager() {
 function deploy_istio() {
     istioctl operator init
     kubectl apply -f ./config/local/istio/istio.yaml
-
-    # helm install istio-init \
-        #     istio.io/istio-init \
-        #     --set app-version="1.5.1" \
-        #     -n istio-system \
-        #     --wait
-
-    # kubectl wait \
-        #     --for=condition=complete job --all \
-        #     -n istio-system
-
-    # if [ "$ENVIRONMENT" = "" ] || [ "$ENVIRONMENT" = "LOCAL_KIND" ]; then
-    #     helm install istio \
-        #         istio.io/istio \
-        #         --set app-version="1.5.1" \
-        #         --set global.mtls.enabled=true \
-        #         --set global.controlPlaneSecurityEnabled=true \
-        #         --set global.configValidation=false \
-        #         --set global.proxy.accessLogFile="/dev/stdout" \
-        #         --set kiali.enabled=true \
-        #         --set gateways.istio-ingressgateway.sds.enabled=true \
-        #         --set gateways.istio-egressgateway.enabled=true \
-        #         --set sidecarInjectorWebhook.rewriteAppHTTPProbe=true \
-        #         -n istio-system \
-        #         --wait
-    # else
-    #     helm install istio \
-        #         istio.io/istio \
-        #         --set app-version="1.5.1" \
-        #         --set global.mtls.enabled=true \
-        #         --set global.controlPlaneSecurityEnabled=true \
-        #         --set global.configValidation=false \
-        #         --set global.proxy.accessLogFile="/dev/stdout" \
-        #         --set kiali.enabled=true \
-        #         --set gateways.istio-ingressgateway.sds.enabled=true \
-        #         --set gateways.istio-egressgateway.enabled=true \
-        #         --set sidecarInjectorWebhook.rewriteAppHTTPProbe=true \
-        #         --set mixer.telemetry.enabled=false \
-        #         -n istio-system \
-        #         --wait
-    # fi
 }
 
 function deploy_istio_addons() {

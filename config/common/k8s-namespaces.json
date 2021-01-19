@@ -1,0 +1,7 @@
+[
+  {"name": "metallb-system", "labels": []},
+  {"name": "cert-manager", "labels": []},
+  {"name": "istio-system", "labels": []},
+  {"name": "edge", "labels": ["istio-injection=enabled"]}
+]
+

@@ -1,4 +1,5 @@
 from kind_cluster import KindCluster
+from k8s_helper import K8SHelper
 
 
 class ClusterHelper:
@@ -6,6 +7,7 @@ class ClusterHelper:
 
     env = ""
     kind_cluster = KindCluster()
+    k8s_helper = K8SHelper()
 
     def __init__(self, env):
         self.env = env.lower()
@@ -19,7 +21,8 @@ class ClusterHelper:
             raise Exception(
                 "Environment '{env}' is not supported".format(env=self.env))
 
-        env_to_func_mapper.get(self.env)(preload_images)
+       # env_to_func_mapper.get(self.env)(preload_images)
+        self.k8s_helper.create_namespaces()
 
     def stop(self):
         env_to_func_mapper = {

@@ -18,11 +18,15 @@ from cluster_helper import ClusterHelper
 def main(args):
     """ Main entry point of the Edge Cloud CLI """
     try:
+        docker_images_helper = DockerImageHelper()
+        certificate_helper = CertificateHelper()
+        cluster_helper = ClusterHelper(args.env)
+
         if args.generate_certificate:
-            CertificateHelper().generate()
+            certificate_helper.generate()
 
         if args.pull_latest_images:
-            DockerImageHelper().pull_latest_images()
+            docker_images_helper.pull_latest_images()
 
         if args.start and args.stop:
             raise Exception("start and stop cannot be used together")
@@ -33,11 +37,11 @@ def main(args):
 
         if args.stop and args.deploy_services:
             raise Exception("stop and deploy_services cannot be used together")
-        
+
         if args.start:
-            ClusterHelper(args.env).start(args.preload_images)
+            cluster_helper.start(args.preload_images)
         elif args.stop:
-            ClusterHelper(args.env).stop()
+            cluster_helper.stop()
 
     except Exception as exception:
         print(exception)

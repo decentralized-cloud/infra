@@ -6,9 +6,10 @@ class DockerImageHelper:
     ''' Docker Image Helper '''
 
     system_helper = SystemHelper()
+    config_helper = ConfigHelper()
 
     def pull_latest_images(self):
-        dockerImages = ConfigHelper().get_required_docker_images()
+        docker_images = self.config_helper.get_required_docker_images()
 
-        for dockerImage in dockerImages:
-            self.system_helper.execute("docker pull {dockerImage}".format(dockerImage=dockerImage))
+        for docker_image in docker_images:
+            self.system_helper.execute("docker pull {docker_image}".format(docker_image=docker_image))

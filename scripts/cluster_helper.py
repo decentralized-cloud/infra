@@ -5,6 +5,7 @@ class ClusterHelper:
     ''' Simplify working with different type cluster such as those created by Kind '''
 
     env = ""
+    kind_cluster = KindCluster()
 
     def __init__(self, env):
         self.env = env.lower()
@@ -32,7 +33,7 @@ class ClusterHelper:
         env_to_func_mapper.get(self.env)()
 
     def start_kind(self, preload_images):
-        KindCluster().start(preload_images)
+        self.kind_cluster.start(preload_images)
 
     def stop_kind(self):
-        KindCluster().stop()
+        self.kind_cluster.stop()

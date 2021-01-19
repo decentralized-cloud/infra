@@ -12,6 +12,7 @@ import argparse
 import sys
 from certificate_helper import CertificateHelper
 from docker_images_helper import DockerImageHelper
+from cluster_helper import ClusterHelper
 
 
 def main(args):
@@ -32,6 +33,11 @@ def main(args):
 
         if args.stop and args.deploy_services:
             raise Exception("stop and deploy_services cannot be used together")
+        
+        if args.start:
+            ClusterHelper(args.env).start(args.preload_images)
+        elif args.stop:
+            ClusterHelper(args.env).stop()
 
     except Exception as exception:
         print(exception)
@@ -53,7 +59,7 @@ if __name__ == "__main__":
                         default=False, help="Start the cluster")
     parser.add_argument("-r", "--stop", action="store_true",
                         default=False, help="Stop the cluster")
-    parser.add_argument("--pre-load-images", action="store_true",
+    parser.add_argument("--preload-images", action="store_true",
                         default=False, help="Preload images after cluster started")
     parser.add_argument("--deploy_services", action="store_true",
                         default=False, help="Deploy Edge Cloud required services")

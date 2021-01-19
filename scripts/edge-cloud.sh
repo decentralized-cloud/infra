@@ -200,16 +200,11 @@ function print_help() {
     echo -e "Usage: $1 [command]\n"
     echo "Available Commands:"
     echo -e "\t pull_latest_docker_images \n\t\t Pull down latest required docker images"
-    echo -e "\t generate_local_self_signed_certificate \n\t\t Generate new set of local self-signed certificates"
     echo -e "\t start \n\t\t Start K8s cluster"
     echo -e "\t stop \n\t\t Stop K8s cluster"
     echo -e "\t deploy_services <config config_path>\n\t\t Deploy all edge services"
     echo -e "\t remove_services \n\t\t Remove all edge services"
     echo -e "\t deploy_istio_addons \n\t\t Deploy istio addons"
-}
-
-function generate_local_self_signed_certificate() {
-    ./scripts/generate-certificate.sh
 }
 
 function start() {
@@ -337,7 +332,7 @@ fi
 set_local_variable
 
 case $1 in
-    pull_latest_docker_images|generate_local_self_signed_certificate|start|stop|remove_services|deploy_istio_addons) "$1" ;;
+    pull_latest_docker_images|start|stop|remove_services|deploy_istio_addons) "$1" ;;
     deploy_services) "$1" "${@:2}" ;;
     *) print_help "$0" ;;
 esac

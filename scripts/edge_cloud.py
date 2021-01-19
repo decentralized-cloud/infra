@@ -10,13 +10,16 @@ __license__ = "AGPL 3.0"
 
 import argparse
 import sys
-import os
+from certificate_helper import CertificateHelper
 from docker_images_helper import DockerImageHelper
 
 
 def main(args):
     """ Main entry point of the Edge Cloud CLI """
     try:
+        if args.generate_certificate:
+            CertificateHelper().generate()
+
         if args.pull_latest_images:
             DockerImageHelper().pull_latest_images()
 
@@ -42,6 +45,8 @@ if __name__ == "__main__":
                      "Author: {author}\n" +
                      "{version}\n").format(author=__author__, version=__version__), formatter_class=argparse.RawTextHelpFormatter)
 
+    parser.add_argument("--generate_certificate", action="store_true",
+                        default=False, help="Generate local self signed certificate")
     parser.add_argument("--pull_latest_images", action="store_true",
                         default=False, help="Pull latest required docker images")
     parser.add_argument("-s", "--start", action="store_true",

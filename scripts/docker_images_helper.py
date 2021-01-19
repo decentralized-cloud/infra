@@ -1,5 +1,5 @@
 import json
-import os
+from os import system
 from config_helper import ConfigHelper
 
 class DockerImageHelper:
@@ -9,4 +9,4 @@ class DockerImageHelper:
         dockerImages = ConfigHelper().get_required_docker_images()
 
         for dockerImage in dockerImages:
-            os.system("docker pull {dockerImage}".format(dockerImage=dockerImage))
+            system("docker pull {dockerImage}".format(dockerImage=dockerImage))

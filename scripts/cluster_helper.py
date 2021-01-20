@@ -4,6 +4,7 @@ from metallb_helper import MetallbHelper
 from k8s_dashboard_helper import K8SDashboardHelper
 from cert_manager_helper import CertManagerHelper
 from istio_helper import IstioHelper
+from mongodb_helper import MongoDBHelper
 
 
 class ClusterHelper:
@@ -11,7 +12,7 @@ class ClusterHelper:
 
     env = ""
     kind_cluster = KindCluster()
-    k8s_helper = K8SHelper()
+    k8s_helper = ()
 
     def __init__(self, env):
         self.env = env.lower()
@@ -26,11 +27,12 @@ class ClusterHelper:
                 "Environment '{env}' is not supported".format(env=self.env))
 
         env_to_func_mapper.get(self.env)(preload_images)
-        self.k8s_helper.create_namespaces()
+        K8SHelper().create_namespaces()
         MetallbHelper(self.env).deploy()
         K8SDashboardHelper().deploy()
         CertManagerHelper().deploy()
         IstioHelper().deploy()
+        MongoDBHelper().deploy()
 
     def stop(self):
         env_to_func_mapper = {

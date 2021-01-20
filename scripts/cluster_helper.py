@@ -3,6 +3,7 @@ from k8s_helper import K8SHelper
 from metallb_helper import MetallbHelper
 from k8s_dashboard_helper import K8SDashboardHelper
 from cert_manager_helper import CertManagerHelper
+from istio_helper import IstioHelper
 
 
 class ClusterHelper:
@@ -29,6 +30,7 @@ class ClusterHelper:
         MetallbHelper(self.env).deploy()
         K8SDashboardHelper().deploy()
         CertManagerHelper().deploy()
+        IstioHelper().deploy()
 
     def stop(self):
         env_to_func_mapper = {

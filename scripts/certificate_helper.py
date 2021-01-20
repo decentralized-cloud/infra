@@ -11,4 +11,5 @@ class CertificateHelper:
     system_helper = SystemHelper()
 
     def generate(self):
-        self.system_helper.execute(path.join(self.scripts_directory_path, "generate-certificate.sh"))
+        self.system_helper.execute(
+            path.join(self.scripts_directory_path, "generate-certificate.sh"))

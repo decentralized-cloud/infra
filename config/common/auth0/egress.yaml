@@ -4,14 +4,14 @@ metadata:
   name: auth0-ext
 spec:
   hosts:
-  - dev-lyrnhma6.auth0.com
+    - dev-lyrnhma6.auth0.com
   ports:
-  - number: 443
-    name: https
-    protocol: HTTPS
-  - number: 80
-    name: http
-    protocol: HTTP
+    - number: 443
+      name: https
+      protocol: HTTPS
+    - number: 80
+      name: http
+      protocol: HTTP
   resolution: DNS
   location: MESH_EXTERNAL
 ---
@@ -21,15 +21,15 @@ metadata:
   name: dev-lyrnhma6.auth0.com
 spec:
   hosts:
-  - dev-lyrnhma6.auth0.com
+    - dev-lyrnhma6.auth0.com
   tls:
-  - match:
-    - port: 443
-      sniHosts:
-      - dev-lyrnhma6.auth0.com
-    route:
-    - destination:
-        host: dev-lyrnhma6.auth0.com
-        port:
-          number: 443
-      weight: 100
+    - match:
+        - port: 443
+          sniHosts:
+            - dev-lyrnhma6.auth0.com
+      route:
+        - destination:
+            host: dev-lyrnhma6.auth0.com
+            port:
+              number: 443
+          weight: 100

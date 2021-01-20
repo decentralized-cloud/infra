@@ -8,15 +8,12 @@ spec:
   gateways:
     - edge-cloud-gateway-http
   http:
-    -
-      match:
-        -
-          uri:
+    - match:
+        - uri:
             prefix: /
       ignoreUriCase: true
       route:
-        -
-          destination:
+        - destination:
             host: xxxxxxxx.edge.svc.cluster.local
             port:
               number: 8089
@@ -31,15 +28,12 @@ spec:
   gateways:
     - edge-cloud-gateway-http
   http:
-    -
-      match:
-        -
-          uri:
+    - match:
+        - uri:
             prefix: /
       ignoreUriCase: true
       route:
-        -
-          destination:
+        - destination:
             host: xxxxxxxx.edge.svc.cluster.local
             port:
               number: 8089

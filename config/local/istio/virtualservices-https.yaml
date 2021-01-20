@@ -8,15 +8,15 @@ spec:
   hosts:
     - edge-cloud.com
   http:
-  - match:
-    - uri:
-        prefix: "/"
-      ignoreUriCase: true
-    route:
-    - destination:
-        host: frontend.edge.svc.cluster.local
-        port:
-          number: 80
+    - match:
+        - uri:
+            prefix: "/"
+          ignoreUriCase: true
+      route:
+        - destination:
+            host: frontend.edge.svc.cluster.local
+            port:
+              number: 80
 ---
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
@@ -28,13 +28,12 @@ spec:
   hosts:
     - api.edge-cloud.com
   http:
-  - match:
-    - uri:
-        prefix: "/"
-      ignoreUriCase: true
-    route:
-    - destination:
-        host: api-gateway.edge.svc.cluster.local
-        port:
-          number: 80
-
+    - match:
+        - uri:
+            prefix: "/"
+          ignoreUriCase: true
+      route:
+        - destination:
+            host: api-gateway.edge.svc.cluster.local
+            port:
+              number: 80

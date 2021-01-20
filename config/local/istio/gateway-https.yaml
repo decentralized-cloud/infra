@@ -6,8 +6,7 @@ spec:
   selector:
     istio: ingressgateway # use istio default controller
   servers:
-    -
-      hosts:
+    - hosts:
         - edge-cloud.com
       port:
         name: https-443-edge-cloud-com
@@ -18,8 +17,7 @@ spec:
         mode: SIMPLE
         privateKey: sds
         serverCertificate: sds
-    -
-      hosts:
+    - hosts:
         - api.edge-cloud.com
       port:
         name: https-443-api-edge-cloud-com

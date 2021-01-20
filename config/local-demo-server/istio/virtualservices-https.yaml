@@ -8,15 +8,12 @@ spec:
   gateways:
     - edge-cloud-gateway-https
   http:
-    -
-      match:
-        -
-          uri:
+    - match:
+        - uri:
             prefix: /
       ignoreUriCase: true
       route:
-        -
-          destination:
+        - destination:
             host: frontend.edge.svc.cluster.local
             port:
               number: 80
@@ -31,15 +28,12 @@ spec:
   gateways:
     - edge-cloud-gateway-https
   http:
-    -
-      match:
-        -
-          uri:
+    - match:
+        - uri:
             prefix: /
       ignoreUriCase: true
       route:
-        -
-          destination:
+        - destination:
             host: api-gateway.edge.svc.cluster.local
             port:
               number: 80

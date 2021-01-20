@@ -10,6 +10,7 @@ __license__ = "AGPL 3.0"
 
 import argparse
 import sys
+import os
 from certificate_helper import CertificateHelper
 from docker_images_helper import DockerImageHelper
 from cluster_helper import ClusterHelper
@@ -36,7 +37,8 @@ def main(args):
             raise Exception("stop and deploy-services cannot be used together")
 
         if args.stop and args.deploy_istio_addons:
-            raise Exception("stop and deploy-istio-addons cannot be used together")
+            raise Exception(
+                "stop and deploy-istio-addons cannot be used together")
 
         cluster_helper = ClusterHelper(args.env)
 
@@ -56,9 +58,9 @@ def main(args):
 if __name__ == "__main__":
     """ This is executed when run from the command line """
     parser = argparse.ArgumentParser(
-        description=("Edge Cloud CLI\n" +
-                     "Author: {author}\n" +
-                     "{version}\n").format(author=__author__, version=__version__), formatter_class=argparse.RawTextHelpFormatter)
+        description=("Edge Cloud CLI" + os.linesep +
+                     "Author: {author}" + os.linesep +
+                     "{version}").format(author=__author__, version=__version__), formatter_class=argparse.RawTextHelpFormatter)
 
     parser.add_argument("--generate-certificate", action="store_true",
                         default=False, help="Generate local self signed certificate")
@@ -77,7 +79,7 @@ if __name__ == "__main__":
     parser.add_argument("--deploy-istio-addons", action="store_true",
                         default=False, help="Deploy istio addons")
     parser.add_argument("--env", action="store",
-                        default="LOCAL_KIND", help="Specify the environment to start the cluster on. Possibles Options are: \n"+"LOCAL_KIND")
+                        default="LOCAL_KIND", help="Specify the environment to start the cluster on. Possibles Options are: " + os.linesep + "LOCAL_KIND")
     parser.add_argument(
         "--version",
         action="version",

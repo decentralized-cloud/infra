@@ -7,8 +7,6 @@ class MetallbHelper:
     ''' Simplify deploying metallb '''
 
     env = ""
-    config_directory_path = path.join(
-        path.dirname(__file__), "..", "config")
     config_helper = ConfigHelper()
     system_helper = SystemHelper()
 
@@ -30,8 +28,6 @@ class MetallbHelper:
         env_to_func_mapper.get(self.env)()
 
     def deploy_local_kind(self):
-        config_file = path.join(
-            self.config_directory_path, "local", "metallb_config.yaml")
-
         self.system_helper.execute(
-            "kubectl apply -f \"{config_file}\" -n metallb-system".format(config_file=config_file))
+            "kubectl apply -f \"{config_file}\" -n metallb-system".format(config_file=path.join(
+                self.config_helper.get_config_root_Directory(), "local", "metallb_config.yaml")))

@@ -8,12 +8,10 @@ class ConfigHelper:
     config_directory_path = path.join(
         path.dirname(__file__), "..", "config")
 
+    def get_config_root_Directory(self):
+        return self.config_directory_path
+
     def get_required_docker_images(self):
-        config_file = path.join(
-            self.config_directory_path, "common", "docker", "images.json")
-
-        if not path.exists(config_file):
-            raise Exception(f'Config file "{config_file}" does not exist')
-
-        with open(config_file) as f:
+        with open(path.join(
+                self.config_directory_path, "common", "docker", "images.json")) as f:
             return json.load(f)

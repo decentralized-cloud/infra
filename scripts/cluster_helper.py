@@ -1,6 +1,7 @@
 from kind_cluster import KindCluster
 from k8s_helper import K8SHelper
 from metallb_helper import MetallbHelper
+from k8s_dashboard_helper import K8SDashboardHelper
 
 
 class ClusterHelper:
@@ -25,6 +26,7 @@ class ClusterHelper:
         env_to_func_mapper.get(self.env)(preload_images)
         self.k8s_helper.create_namespaces()
         MetallbHelper(self.env).deploy()
+        K8SDashboardHelper().deploy()
 
     def stop(self):
         env_to_func_mapper = {

@@ -1,13 +1,13 @@
 import json
 from os import path
+from config_helper import ConfigHelper
 from system_helper import SystemHelper
 
 
 class K8SHelper:
     ''' Provide different functionality specific to K8S cluster that are required to deploy different resources '''
 
-    config_directory_path = path.join(
-        path.dirname(__file__), "..", "config")
+    config_helper = ConfigHelper()
     system_helper = SystemHelper()
 
     def create_namespaces(self):
@@ -22,11 +22,6 @@ class K8SHelper:
                     name=namespace['name'], label=label))
 
     def get_all_namespaces(self):
-        config_file = path.join(
-            self.config_directory_path, "common", "k8s-namespaces.json")
-
-        if not path.exists(config_file):
-            raise Exception(f'Config file "{config_file}" does not exist')
-
-        with open(config_file) as f:
+        with open(path.join(
+                self.config_helper.get_config_root_Directory(), "common", "k8s-namespaces.json")) as f:
             return json.load(f)

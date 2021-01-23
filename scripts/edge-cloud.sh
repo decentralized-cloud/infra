@@ -302,8 +302,7 @@ function deploy_a_service() {
         -n edge \
         --version "$helm_chart_version" \
         --set image.version="$app_version" \
-        --set image.pullPolicy=$image_pull_policy \
-        --wait
+        --set image.pullPolicy=$image_pull_policy
 }
 
 function deploy_frontend_service() {
@@ -320,8 +319,7 @@ function deploy_frontend_service() {
         --set image.pullPolicy=$image_pull_policy \
         --set pod.apiGateway.url="$EDGE_CLOUD_API_GATEWAY_URL" \
         --set pod.idp.clientAuthorityUrl="$EDGE_CLOUD_IDP_URL" \
-        --set pod.idp.clientId="edge-cloud" \
-        --wait
+        --set pod.idp.clientId="edge-cloud"
 }
 
 if [ "$ENVIRONMENT" != "" ] && [ "$ENVIRONMENT" != "LOCAL_KIND" ] && [ "$ENVIRONMENT" != "LOCAL_DEMO_SERVER" ]; then

@@ -13,13 +13,14 @@ class ClusterHelper:
 
     env = ""
     kind_cluster = KindCluster()
+    k8s_helper = K8SHelper()
 
     def __init__(self, env):
         self.env = env.lower()
 
     def start(self, preload_images):
         env_to_start_func_mapper = {
-            "local_kind": self.start_kind
+            "local_kind": self.start_local_kind
         }
 
         if not self.env in env_to_start_func_mapper:
@@ -27,8 +28,8 @@ class ClusterHelper:
                 "Environment '{env}' is not supported".format(env=self.env))
 
         env_to_start_func_mapper.get(self.env)(preload_images)
-        K8SHelper().create_namespaces()
-        MetallbHelper(self.env).deploy()
+        self.k8s_helper.create_namespaces()
+        MetallbHelper().deploy()
         K8SDashboardHelper().deploy()
         CertManagerHelper().deploy()
         IstioHelper().deploy()
@@ -47,7 +48,7 @@ class ClusterHelper:
 
     def stop(self):
         env_to_func_mapper = {
-            "local_kind": self.stop_kind
+            "local_kind": self.stop_local_kind
         }
 
         if not self.env in env_to_func_mapper:
@@ -56,18 +57,22 @@ class ClusterHelper:
 
         env_to_func_mapper.get(self.env)()
 
-    def start_kind(self, preload_images):
+    def start_local_kind(self, preload_images):
         self.kind_cluster.start(preload_images)
 
-    def stop_kind(self):
+    def stop_local_kind(self):
         self.kind_cluster.stop()
 
     def display_confirmation_kind(self):
+        ingress_ip = self.k8s_helper.get_ip_range()[0]
+
         print()
         print("************************************************************************************")
-        print("You need to make sure edge-cloud.com is added to your /etc/hosts file locally")
-        print("If you are using kind, you most likely got 172.18.255.1 as its IP address")
+        print(
+            "You need to make sure edge-cloud.com is added to your /etc/hosts file locally")
+        print("If you are using kind, you most likely got {ingress_ip} as its IP address".format(
+            ingress_ip=ingress_ip))
         print("Add following line to your /etc/hosts file:")
-        print("172.18.255.1 edge-cloud.com")
+        print("{ingress_ip} edge-cloud.com".format(ingress_ip=ingress_ip))
         print("************************************************************************************")
         print()

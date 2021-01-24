@@ -15,6 +15,7 @@ install_curl()
 
 install_kubectl()
 {
+    sudo rm -f /etc/apt/sources.list.d/kubernetes.list
     sudo apt-get update && sudo apt-get install -y apt-transport-https gnupg2 curl
     curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
     echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee -a /etc/apt/sources.list.d/kubernetes.list
@@ -37,6 +38,8 @@ install_docker()
 
     dist_id=$(lsb_release -is)
 
+    echo "Detected $dist_id"
+
     if [[ "$dist_id" == "Linuxmint" ]]; then
         sudo add-apt-repository \
             "deb https://download.docker.com/linux/ubuntu \
@@ -51,7 +54,6 @@ install_docker()
         echo "Distro $dist_id is not supported to install docker on"
         exit 1
     fi
-
 
     # TODO Pin docker version
     sudo apt-get install \
@@ -68,7 +70,7 @@ install_docker()
 
 install_go()
 {
-    curl -Lo go.tar.gz https://dl.google.com/go/go1.15.6.linux-amd64.tar.gz
+    curl -Lo go.tar.gz https://dl.google.com/go/go1.15.7.linux-amd64.tar.gz
     sudo rm -rf /usr/local/go
     sudo tar -C /usr/local -xzf go.tar.gz
     rm go.tar.gz
@@ -78,7 +80,7 @@ install_go()
 
 install_kind()
 {
-    curl -Lo ./kind https://github.com/kubernetes-sigs/kind/releases/download/v0.9.0/kind-linux-amd64
+    curl -Lo ./kind https://github.com/kubernetes-sigs/kind/releases/download/v0.10.0/kind-linux-amd64
     chmod +x ./kind
     sudo mv -f ./kind /usr/local/bin/ # Overwrite previous version
 }
@@ -93,14 +95,34 @@ install_helm()
 
 install_istioctl()
 {
-    curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.7.6  sh -
-    sudo mv -f istio-1.7.6/bin/istioctl /usr/local/bin/ # Overwrite previous version
-    rm -rf istio-1.7.6
+    curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.8.2  sh -
+    sudo mv -f istio-1.8.2/bin/istioctl /usr/local/bin/ # Overwrite previous version
+    rm -rf istio-1.8.2
 }
 
 install_jq()
 {
     sudo apt-get install jq -y
+}
+
+install_telepresence()
+{
+    dist_id=$(lsb_release -is)
+
+    echo "Detected $dist_id"
+
+    if [[ "$dist_id" == "Linuxmint" ]]; then
+        curl -sO https://packagecloud.io/install/repositories/datawireio/telepresence/script.deb.sh
+        sudo env os=ubuntu dist=$(awk -F= '$1=="UBUNTU_CODENAME" { print $2 ;}' /etc/os-release) bash script.deb.sh
+        sudo apt install --no-install-recommends -y telepresence
+        rm script.deb.sh
+    elif [[ "$dist_id" == "Ubuntu" ]]; then
+        curl -s https://packagecloud.io/install/repositories/datawireio/telepresence/script.deb.sh | sudo bash
+        sudo apt install --no-install-recommends -y telepresence
+    else
+        echo "Distro $dist_id is not supported to install telepresence on"
+        exit 1
+    fi
 }
 
 add_helm_repos()
@@ -133,7 +155,7 @@ fi
 sudo apt-get update -y
 
 # List of dependencies that are required by the edge-cloud infra for different use cases
-readonly dependencies="curl kubectl docker go kind helm istioctl jq"
+readonly dependencies="curl kubectl docker go kind helm istioctl jq telepresence"
 
 force=false
 
@@ -147,7 +169,7 @@ for dep in $dependencies; do
         install_"$dep"
         echo "Finished installing $dep"
     elif [ $force = true ]; then
-        if [[ "curl kubectl helm istioctl kind go" == *"$dep"* ]]; then
+        if [[ "curl kubectl helm istioctl kind go telepresence" == *"$dep"* ]]; then
             echo "Force installing $dep"
             install_"$dep"
             echo "Finished installing $dep"

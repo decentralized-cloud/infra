@@ -2,6 +2,7 @@ import json
 from os import path
 from config_helper import ConfigHelper
 from system_helper import SystemHelper
+from kubernetes import client, config
 
 
 class K8SHelper:
@@ -20,6 +21,18 @@ class K8SHelper:
             for label in namespace['labels']:
                 self.system_helper.execute("kubectl label namespace {name} {label}".format(
                     name=namespace['name'], label=label))
+
+    def get_ip_range(self):
+        config.load_kube_config()
+
+        core_api_v1 = client.CoreV1Api()
+        nodes = core_api_v1.list_node(watch=False)
+        for node in nodes.items:
+            for addr in node.status.addresses:
+                if addr.type == 'InternalIP':
+                    node_ip = addr.address.split('.')
+
+                    return ['.'.join(node_ip[:2])+".255.1", '.'.join(node_ip[:2])+".255.250"]
 
     def get_all_namespaces(self):
         with open(path.join(

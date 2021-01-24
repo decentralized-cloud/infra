@@ -54,7 +54,6 @@ install_docker()
         exit 1
     fi
 
-
     # TODO Pin docker version
     sudo apt-get install \
         -y \
@@ -105,6 +104,26 @@ install_jq()
     sudo apt-get install jq -y
 }
 
+install_telepresence()
+{
+    dist_id=$(lsb_release -is)
+
+    echo "Detected $dist_id"
+
+    if [[ "$dist_id" == "Linuxmint" ]]; then
+        curl -sO https://packagecloud.io/install/repositories/datawireio/telepresence/script.deb.sh
+        sudo env os=ubuntu dist=$(awk -F= '$1=="UBUNTU_CODENAME" { print $2 ;}' /etc/os-release) bash script.deb.sh
+        sudo apt install --no-install-recommends -y telepresence
+        rm script.deb.sh
+    elif [[ "$dist_id" == "Ubuntu" ]]; then
+        curl -s https://packagecloud.io/install/repositories/datawireio/telepresence/script.deb.sh | sudo bash
+        sudo apt install --no-install-recommends -y telepresence
+    else
+        echo "Distro $dist_id is not supported to install telepresence on"
+        exit 1
+    fi
+}
+
 add_helm_repos()
 {
     # Add helm stable repo repo
@@ -135,7 +154,7 @@ fi
 sudo apt-get update -y
 
 # List of dependencies that are required by the edge-cloud infra for different use cases
-readonly dependencies="curl kubectl docker go kind helm istioctl jq"
+readonly dependencies="curl kubectl docker go kind helm istioctl jq telepresence"
 
 force=false
 
@@ -149,7 +168,7 @@ for dep in $dependencies; do
         install_"$dep"
         echo "Finished installing $dep"
     elif [ $force = true ]; then
-        if [[ "curl kubectl helm istioctl kind go" == *"$dep"* ]]; then
+        if [[ "curl kubectl helm istioctl kind go telepresence" == *"$dep"* ]]; then
             echo "Force installing $dep"
             install_"$dep"
             echo "Finished installing $dep"

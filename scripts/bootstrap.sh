@@ -37,6 +37,8 @@ install_docker()
 
     dist_id=$(lsb_release -is)
 
+    echo "Detected $dist_id"
+
     if [[ "$dist_id" == "Linuxmint" ]]; then
         sudo add-apt-repository \
             "deb https://download.docker.com/linux/ubuntu \
@@ -68,7 +70,7 @@ install_docker()
 
 install_go()
 {
-    curl -Lo go.tar.gz https://dl.google.com/go/go1.15.6.linux-amd64.tar.gz
+    curl -Lo go.tar.gz https://dl.google.com/go/go1.15.7.linux-amd64.tar.gz
     sudo rm -rf /usr/local/go
     sudo tar -C /usr/local -xzf go.tar.gz
     rm go.tar.gz
@@ -78,7 +80,7 @@ install_go()
 
 install_kind()
 {
-    curl -Lo ./kind https://github.com/kubernetes-sigs/kind/releases/download/v0.9.0/kind-linux-amd64
+    curl -Lo ./kind https://github.com/kubernetes-sigs/kind/releases/download/v0.10.0/kind-linux-amd64
     chmod +x ./kind
     sudo mv -f ./kind /usr/local/bin/ # Overwrite previous version
 }
@@ -93,9 +95,9 @@ install_helm()
 
 install_istioctl()
 {
-    curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.7.6  sh -
-    sudo mv -f istio-1.7.6/bin/istioctl /usr/local/bin/ # Overwrite previous version
-    rm -rf istio-1.7.6
+    curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.8.2  sh -
+    sudo mv -f istio-1.8.2/bin/istioctl /usr/local/bin/ # Overwrite previous version
+    rm -rf istio-1.8.2
 }
 
 install_jq()

@@ -79,7 +79,9 @@ if __name__ == "__main__":
     parser.add_argument("--deploy-istio-addons", action="store_true",
                         default=False, help="Deploy istio addons")
     parser.add_argument("--env", action="store",
-                        default="LOCAL_KIND", help="Specify the environment to start the cluster on. Possibles Options are: " + os.linesep + "LOCAL_KIND")
+                        default="LOCAL_KIND", help="Specify the environment to start the cluster on. Possibles Options are: " +
+                        os.linesep +
+                        "LOCAL_KIND")
     parser.add_argument(
         "--version",
         action="version",

@@ -19,7 +19,7 @@ class ClusterHelper:
 
     def start(self, preload_images):
         env_to_start_func_mapper = {
-            "local_kind": self.start_kind
+            "local_kind": self.start_local_kind
         }
 
         if not self.env in env_to_start_func_mapper:
@@ -47,7 +47,7 @@ class ClusterHelper:
 
     def stop(self):
         env_to_func_mapper = {
-            "local_kind": self.stop_kind
+            "local_kind": self.stop_local_kind
         }
 
         if not self.env in env_to_func_mapper:
@@ -56,10 +56,10 @@ class ClusterHelper:
 
         env_to_func_mapper.get(self.env)()
 
-    def start_kind(self, preload_images):
+    def start_local_kind(self, preload_images):
         self.kind_cluster.start(preload_images)
 
-    def stop_kind(self):
+    def stop_local_kind(self):
         self.kind_cluster.stop()
 
     def display_confirmation_kind(self):

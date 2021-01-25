@@ -9,8 +9,8 @@ __version__ = "0.1.0"
 __license__ = "AGPL 3.0"
 
 import argparse
-import sys
-import os
+from sys import exit
+from os import linesep
 from certificate_helper import CertificateHelper
 from docker_images_helper import DockerImageHelper
 from cluster_helper import ClusterHelper
@@ -52,14 +52,14 @@ def main(args):
 
     except Exception as exception:
         print(exception)
-        sys.exit(1)
+        exit(1)
 
 
 if __name__ == "__main__":
     """ This is executed when run from the command line """
     parser = argparse.ArgumentParser(
-        description=("Edge Cloud CLI" + os.linesep +
-                     "Author: {author}" + os.linesep +
+        description=("Edge Cloud CLI" + linesep +
+                     "Author: {author}" + linesep +
                      "{version}").format(author=__author__, version=__version__), formatter_class=argparse.RawTextHelpFormatter)
 
     parser.add_argument("--generate-certificate", action="store_true",
@@ -80,7 +80,7 @@ if __name__ == "__main__":
                         default=False, help="Deploy istio addons")
     parser.add_argument("--env", action="store",
                         default="LOCAL_KIND", help="Specify the environment to start the cluster on. Possibles Options are: " +
-                        os.linesep +
+                        linesep +
                         "LOCAL_KIND")
     parser.add_argument(
         "--version",

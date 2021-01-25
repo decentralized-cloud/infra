@@ -38,7 +38,8 @@ class ClusterHelper:
         EdgeCloudHelper(self.env).deploy_config()
 
         env_to_display_confirmation_func_mapper = {
-            "local_kind": self.display_confirmation_kind
+            "local_kind": self.display_confirmation_local_kind_windows
+            "local_windows": self.display_confirmation_local_kind_windows
         }
 
         if not self.env in env_to_display_confirmation_func_mapper:
@@ -71,7 +72,7 @@ class ClusterHelper:
     def stop_local_windows(self):
         return
 
-    def display_confirmation_kind(self):
+    def display_confirmation_local_kind_windows(self):
         ingress_ip = self.k8s_helper.get_ip_range()[0]
 
         print()

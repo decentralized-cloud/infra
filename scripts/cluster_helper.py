@@ -38,7 +38,7 @@ class ClusterHelper:
         EdgeCloudHelper(self.env).deploy_config()
 
         env_to_display_confirmation_func_mapper = {
-            "local_kind": self.display_confirmation_local_kind_windows
+            "local_kind": self.display_confirmation_local_kind_windows,
             "local_windows": self.display_confirmation_local_kind_windows
         }
 

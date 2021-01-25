@@ -15,7 +15,8 @@ class EdgeCloudHelper:
 
     def deploy_config(self):
         env_to_func_mapper = {
-            "local_kind": self.deploy_config_kind
+            "local_kind": self.deploy_config_local_kind_windows,
+            "local_windows": self.deploy_config_local_kind_windows
         }
 
         if not self.env in env_to_func_mapper:
@@ -24,7 +25,7 @@ class EdgeCloudHelper:
 
         env_to_func_mapper.get(self.env)()
 
-    def deploy_config_kind(self):
+    def deploy_config_local_kind_windows(self):
         certificates_directory = path.join(
             path.dirname(__file__), "..", "certificates")
 

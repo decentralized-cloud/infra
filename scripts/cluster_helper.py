@@ -20,7 +20,8 @@ class ClusterHelper:
 
     def start(self, preload_images):
         env_to_start_func_mapper = {
-            "local_kind": self.start_local_kind
+            "local_kind": self.start_local_kind,
+            "local_windows": self.start_local_windows
         }
 
         if not self.env in env_to_start_func_mapper:
@@ -48,7 +49,8 @@ class ClusterHelper:
 
     def stop(self):
         env_to_func_mapper = {
-            "local_kind": self.stop_local_kind
+            "local_kind": self.stop_local_kind,
+            "local_windows": self.stop_local_windows
         }
 
         if not self.env in env_to_func_mapper:
@@ -62,6 +64,12 @@ class ClusterHelper:
 
     def stop_local_kind(self):
         self.kind_cluster.stop()
+
+    def start_local_windows(self, preload_images):
+        return
+
+    def stop_local_windows(self):
+        return
 
     def display_confirmation_kind(self):
         ingress_ip = self.k8s_helper.get_ip_range()[0]

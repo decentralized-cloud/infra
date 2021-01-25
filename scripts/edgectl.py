@@ -81,7 +81,9 @@ if __name__ == "__main__":
     parser.add_argument("--env", action="store",
                         default="LOCAL_KIND", help="Specify the environment to start the cluster on. Possibles Options are: " +
                         linesep +
-                        "LOCAL_KIND")
+                        "LOCAL_KIND" +
+                        linesep +
+                        "LOCAL_WINDOWS")
     parser.add_argument(
         "--version",
         action="version",

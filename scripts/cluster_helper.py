@@ -14,6 +14,7 @@ class ClusterHelper:
     env = ""
     kind_cluster = KindCluster()
     k8s_helper = K8SHelper()
+    metallb_helper = MetallbHelper()
 
     def __init__(self, env):
         self.env = env.lower()
@@ -30,7 +31,18 @@ class ClusterHelper:
 
         env_to_start_func_mapper.get(self.env)(preload_images)
         self.k8s_helper.create_namespaces()
-        MetallbHelper().deploy()
+
+        env_to_deploy_metallb_func_mapper = {
+            "local_kind": self.deploy_metallb_local_kind,
+            "local_windows": self.deploy_metallb_local_windows
+        }
+
+        if not self.env in env_to_deploy_metallb_func_mapper:
+            raise Exception(
+                "Environment '{env}' is not supported".format(env=self.env))
+
+        env_to_deploy_metallb_func_mapper.get(self.env)()
+
         K8SDashboardHelper().deploy()
         CertManagerHelper().deploy()
         IstioHelper().deploy()
@@ -38,8 +50,8 @@ class ClusterHelper:
         EdgeCloudHelper(self.env).deploy_config()
 
         env_to_display_confirmation_func_mapper = {
-            "local_kind": self.display_confirmation_local_kind_windows,
-            "local_windows": self.display_confirmation_local_kind_windows
+            "local_kind": self.display_confirmation_local_kind,
+            "local_windows": self.display_confirmation_local_windows
         }
 
         if not self.env in env_to_display_confirmation_func_mapper:
@@ -72,7 +84,13 @@ class ClusterHelper:
     def stop_local_windows(self):
         return
 
-    def display_confirmation_local_kind_windows(self):
+    def deploy_metallb_local_kind(self):
+        self.metallb_helper.deploy()
+
+    def deploy_metallb_local_windows(self):
+        return
+
+    def display_confirmation_local_kind(self):
         ingress_ip = self.k8s_helper.get_ip_range()[0]
 
         print()
@@ -85,3 +103,6 @@ class ClusterHelper:
         print("{ingress_ip} edge-cloud.com".format(ingress_ip=ingress_ip))
         print("************************************************************************************")
         print()
+
+    def display_confirmation_local_windows(self):
+        return

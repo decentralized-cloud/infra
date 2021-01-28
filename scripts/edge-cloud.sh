@@ -301,7 +301,7 @@ function deploy_a_service() {
         decentralized-cloud/"$2" \
         -n edge \
         --version "$helm_chart_version" \
-        --set image.version="$app_version" \
+        --set image.tag="$app_version" \
         --set image.pullPolicy=$image_pull_policy
 }
 
@@ -315,7 +315,7 @@ function deploy_frontend_service() {
     helm install "frontend" decentralized-cloud/"frontend" \
         -n edge \
         --version "$helm_chart_version" \
-        --set image.version="$app_version" \
+        --set image.tag="$app_version" \
         --set image.pullPolicy=$image_pull_policy \
         --set pod.apiGateway.url="$EDGE_CLOUD_API_GATEWAY_URL" \
         --set pod.idp.clientAuthorityUrl="$EDGE_CLOUD_IDP_URL" \

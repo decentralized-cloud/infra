@@ -1,6 +1,6 @@
 {
     "edge-cluster": {
-        "helm_chart_version": "0.2.1",
+        "helm_chart_version": "0.2.2",
         "app_version": "latest",
         "image_pull_policy": "Always"
     },

@@ -43,7 +43,7 @@ spec:
         allowMethods:
           - POST
           - GET
-          - OPTION
+          - OPTIONS
         allowCredentials: false
         allowHeaders:
           - Origin

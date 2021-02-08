@@ -1,0 +1,47 @@
+apiVersion: cert-manager.io/v1alpha2
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt
+spec:
+  acme:
+    email: morteza.alizadeh@gmail.com
+    server: "https://acme-v02.api.letsencrypt.org/directory"
+    privateKeySecretRef:
+      name: edge-cloud-clusterissuer-account-key
+    solvers:
+    - selector:
+      dnsNames:
+      - '*.micro-business.co.nz'
+      - dns01:
+          webhook:
+            config:
+              authApiKey: <your GoDaddy authAPIKey>
+              authApiSecret: <your GoDaddy authApiSecret>
+              production: true
+              ttl: 600
+            groupName: acme.mycompany.com
+            solverName: godaddy
+---
+apiVersion: cert-manager.io/v1alpha2
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-staging
+spec:
+  acme:
+    email: morteza.alizadeh@gmail.com
+    server: https://acme-staging-v02.api.letsencrypt.org/directory
+    privateKeySecretRef:
+      name: edge-cloud-staging-clusterissuer-account-key
+    solvers:
+    - selector:
+      dnsNames:
+      - '*.micro-business.co.nz'
+      - dns01:
+          webhook:
+            config:
+              authApiKey: <your GoDaddy authAPIKey>
+              authApiSecret: <your GoDaddy authApiSecret>
+              production: false
+              ttl: 600
+            groupName: acme.mycompany.com
+            solverName: godaddy

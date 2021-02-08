@@ -16,9 +16,5 @@
     "jimmidyson/configmap-reload:v0.4.0",
     "prom/prometheus:v2.21.0",
     "docker.io/bitnami/mongodb:4.4.3-debian-10-r0",
-    "rancher/k3s:v1.20.0-k3s2",
-    "decentralizedcloud/project:latest",
-    "decentralizedcloud/edge-cluster:latest",
-    "decentralizedcloud/api-gateway:latest",
-    "decentralizedcloud/frontend:latest"
+    "rancher/k3s:v1.20.0-k3s2"
 ]

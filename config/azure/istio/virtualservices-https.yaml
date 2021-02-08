@@ -26,7 +26,7 @@ spec:
   gateways:
     - edge-cloud-micro-business-co-nz-gateway
   hosts:
-    - api.edgecloud.micro-business.co.nz
+    - apiedgecloud.micro-business.co.nz
   http:
     - match:
         - uri:

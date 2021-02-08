@@ -18,13 +18,13 @@ spec:
         privateKey: sds
         serverCertificate: sds
     - hosts:
-        - api.edgecloud.micro-business.co.nz
+        - apiedgecloud.micro-business.co.nz
       port:
         name: https-443-api-edge-cloud-micro-business-co-nz
         number: 443
         protocol: HTTPS
       tls:
-        credentialName: edge-cloud-micro-business-co-nz
+        credentialName: api-edge-cloud-micro-business-co-nz
         mode: SIMPLE
         privateKey: sds
         serverCertificate: sds

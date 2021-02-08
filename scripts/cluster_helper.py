@@ -22,8 +22,8 @@ class ClusterHelper:
     def start(self, preload_images):
         env_to_start_func_mapper = {
             "local_kind": self.start_local_kind,
-            "local_windows": self.noop,
-            "azure": self.noop
+            "local_windows": self.start_local_windows,
+            "azure": self.start_azure
         }
 
         if not self.env in env_to_start_func_mapper:
@@ -35,8 +35,8 @@ class ClusterHelper:
 
         env_to_deploy_metallb_func_mapper = {
             "local_kind": self.deploy_metallb_local_kind,
-            "local_windows": self.noop,
-            "azure": self.noop
+            "local_windows": self.deploy_metallb_local_windows,
+            "azure": self.deploy_metallb_azure
         }
 
         if not self.env in env_to_deploy_metallb_func_mapper:
@@ -53,8 +53,8 @@ class ClusterHelper:
 
         env_to_display_confirmation_func_mapper = {
             "local_kind": self.display_confirmation_local_kind,
-            "local_windows": self.noop,
-            "azure": self.noop
+            "local_windows": self.display_confirmation_local_windows,
+            "azure": self.display_confirmation_azure
         }
 
         if not self.env in env_to_display_confirmation_func_mapper:
@@ -66,8 +66,8 @@ class ClusterHelper:
     def stop(self):
         env_to_func_mapper = {
             "local_kind": self.stop_local_kind,
-            "local_windows": self.noop,
-            "azure": self.noop
+            "local_windows": self.stop_local_windows,
+            "azure": self.stop_azure
         }
 
         if not self.env in env_to_func_mapper:
@@ -99,5 +99,26 @@ class ClusterHelper:
         print("************************************************************************************")
         print()
 
-    def noop(self):
+    def start_local_windows(self, preload_images):
+        return
+
+    def deploy_metallb_local_windows(self):
+        return
+
+    def stop_local_windows(self):
+        return
+
+    def display_confirmation_local_windows(self):
+        return
+
+    def start_azure(self, preload_images):
+        return
+
+    def deploy_metallb_azure(self):
+        return
+
+    def stop_azure(self):
+        return
+
+    def display_confirmation_azure(self):
         return

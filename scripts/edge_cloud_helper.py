@@ -16,7 +16,8 @@ class EdgeCloudHelper:
     def deploy_config(self):
         env_to_func_mapper = {
             "local_kind": self.deploy_config_local_kind_windows,
-            "local_windows": self.deploy_config_local_kind_windows
+            "local_windows": self.deploy_config_local_kind_windows,
+            "local_windows": self.deploy_config_azure
         }
 
         if not self.env in env_to_func_mapper:
@@ -26,22 +27,9 @@ class EdgeCloudHelper:
         env_to_func_mapper.get(self.env)()
 
     def deploy_config_local_kind_windows(self):
-        certificates_directory = path.join(
-            path.dirname(__file__), "..", "certificates")
-
-        self.system_helper.execute(
-            "kubectl create -n cert-manager secret tls ca-key-pair --key=\"{keypair_file}\" --cert=\"{certificate_file}\"".format(
-                keypair_file=path.join(
-                    certificates_directory, "ca.key"), certificate_file=path.join(
-                    certificates_directory, "ca.crt")))
-
-        self.system_helper.execute(
-            "kubectl apply -n cert-manager -f \"{config_file}\"".format(config_file=path.join(
-                self.config_helper.get_config_root_Directory(), "local", "cert-manager", "self-signing-clusterissuer.yaml")))
-
         self.system_helper.execute(
             "kubectl apply -n istio-system -f \"{config_file}\"".format(config_file=path.join(
-                self.config_helper.get_config_root_Directory(), "local", "cert-manager", "certificates.yaml")))
+                self.config_helper.get_config_root_Directory(), "local", "istio", "certificates.yaml")))
 
         self.system_helper.execute(
             "istioctl kube-inject -f \"{config_file}\" | kubectl apply -n edge -f -".format(config_file=path.join(
@@ -50,3 +38,16 @@ class EdgeCloudHelper:
         self.system_helper.execute(
             "istioctl kube-inject -f \"{config_file}\" | kubectl apply -n edge -f -".format(config_file=path.join(
                 self.config_helper.get_config_root_Directory(), "local", "istio", "virtualservices-https.yaml")))
+
+    def deploy_config_azure(self):
+        self.system_helper.execute(
+            "kubectl apply -n istio-system -f \"{config_file}\"".format(config_file=path.join(
+                self.config_helper.get_config_root_Directory(), "azure", "istio", "certificates.yaml")))
+
+        self.system_helper.execute(
+            "istioctl kube-inject -f \"{config_file}\" | kubectl apply -n edge -f -".format(config_file=path.join(
+                self.config_helper.get_config_root_Directory(), "azure", "istio", "gateway-https.yaml")))
+
+        self.system_helper.execute(
+            "istioctl kube-inject -f \"{config_file}\" | kubectl apply -n edge -f -".format(config_file=path.join(
+                self.config_helper.get_config_root_Directory(), "azure", "istio", "virtualservices-https.yaml")))

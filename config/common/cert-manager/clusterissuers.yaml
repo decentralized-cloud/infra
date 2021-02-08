@@ -1,0 +1,45 @@
+apiVersion: cert-manager.io/v1alpha2
+kind: ClusterIssuer
+metadata:
+  name: selfsigned-issuer
+spec:
+  ca:
+    secretName: ca-key-pair
+---
+apiVersion: cert-manager.io/v1alpha2
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt
+spec:
+  acme:
+    email: morteza.alizadeh@gmail.com
+    server: "https://acme-v02.api.letsencrypt.org/directory"
+    privateKeySecretRef:
+      name: edge-cloud-clusterissuer-account-key
+    solvers:
+      - http01:
+          ingress:
+            class: istio
+            podTemplate:
+              metadata:
+                annotations:
+                  sidecar.istio.io/inject: "true"
+---
+apiVersion: cert-manager.io/v1alpha2
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-staging
+spec:
+  acme:
+    email: morteza.alizadeh@gmail.com
+    server: https://acme-staging-v02.api.letsencrypt.org/directory
+    privateKeySecretRef:
+      name: edge-cloud-staging-clusterissuer-account-key
+    solvers:
+      - http01:
+          ingress:
+            class: istio
+            podTemplate:
+              metadata:
+                annotations:
+                  sidecar.istio.io/inject: "true"

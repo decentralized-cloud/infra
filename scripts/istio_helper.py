@@ -15,7 +15,7 @@ class IstioHelper:
 
         self.system_helper.execute(
             "kubectl apply -f \"{config_file}\"".format(config_file=path.join(
-                self.config_helper.get_config_root_Directory(), "local", "istio", "istio.yaml")))
+                self.config_helper.get_config_root_Directory(), "common", "istio", "istio.yaml")))
 
     def deploy_addons(self):
         istio_addons_config_directory = path.join(

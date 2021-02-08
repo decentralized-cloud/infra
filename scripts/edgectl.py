@@ -79,11 +79,13 @@ if __name__ == "__main__":
     parser.add_argument("--deploy-istio-addons", action="store_true",
                         default=False, help="Deploy istio addons")
     parser.add_argument("--env", action="store",
-                        default="LOCAL_KIND", help="Specify the environment to start the cluster on. Possibles Options are: " +
+                        default="local_kind", help="Specify the environment to start the cluster on. Possibles Options are: " +
                         linesep +
-                        "LOCAL_KIND" +
+                        "local_kind" +
                         linesep +
-                        "LOCAL_WINDOWS")
+                        "local_windows" +
+                        linesep +
+                        "azure")
     parser.add_argument(
         "--version",
         action="version",

@@ -1,30 +1,30 @@
 apiVersion: networking.istio.io/v1alpha3
 kind: Gateway
 metadata:
-  name: edge-cloud-gateway
+  name: edge-cloud-micro-business-co-nz-gateway
 spec:
   selector:
     istio: ingressgateway # use istio default controller
   servers:
     - hosts:
-        - edge-cloud.com
+        - edgecloud.micro-business.co.nz
       port:
-        name: https-443-edge-cloud-com
+        name: https-443-edge-cloud-micro-business-co-nz
         number: 443
         protocol: HTTPS
       tls:
-        credentialName: edge-cloud-com
+        credentialName: edge-cloud-micro-business-co-nz
         mode: SIMPLE
         privateKey: sds
         serverCertificate: sds
     - hosts:
-        - api.edge-cloud.com
+        - api.edgecloud.micro-business.co.nz
       port:
-        name: https-443-api-edge-cloud-com
+        name: https-443-api-edge-cloud-micro-business-co-nz
         number: 443
         protocol: HTTPS
       tls:
-        credentialName: edge-cloud-com
+        credentialName: edge-cloud-micro-business-co-nz
         mode: SIMPLE
         privateKey: sds
         serverCertificate: sds

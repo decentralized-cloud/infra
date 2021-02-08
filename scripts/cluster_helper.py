@@ -22,7 +22,8 @@ class ClusterHelper:
     def start(self, preload_images):
         env_to_start_func_mapper = {
             "local_kind": self.start_local_kind,
-            "local_windows": self.start_local_windows
+            "local_windows": self.noop,
+            "azure": self.noop
         }
 
         if not self.env in env_to_start_func_mapper:
@@ -34,7 +35,8 @@ class ClusterHelper:
 
         env_to_deploy_metallb_func_mapper = {
             "local_kind": self.deploy_metallb_local_kind,
-            "local_windows": self.deploy_metallb_local_windows
+            "local_windows": self.noop,
+            "azure": self.noop
         }
 
         if not self.env in env_to_deploy_metallb_func_mapper:
@@ -51,7 +53,8 @@ class ClusterHelper:
 
         env_to_display_confirmation_func_mapper = {
             "local_kind": self.display_confirmation_local_kind,
-            "local_windows": self.display_confirmation_local_windows
+            "local_windows": self.noop,
+            "azure": self.noop
         }
 
         if not self.env in env_to_display_confirmation_func_mapper:
@@ -63,7 +66,8 @@ class ClusterHelper:
     def stop(self):
         env_to_func_mapper = {
             "local_kind": self.stop_local_kind,
-            "local_windows": self.stop_local_windows
+            "local_windows": self.noop,
+            "azure": self.noop
         }
 
         if not self.env in env_to_func_mapper:
@@ -75,20 +79,11 @@ class ClusterHelper:
     def start_local_kind(self, preload_images):
         self.kind_cluster.start(preload_images)
 
-    def stop_local_kind(self):
-        self.kind_cluster.stop()
-
-    def start_local_windows(self, preload_images):
-        return
-
-    def stop_local_windows(self):
-        return
-
     def deploy_metallb_local_kind(self):
         self.metallb_helper.deploy()
 
-    def deploy_metallb_local_windows(self):
-        return
+    def stop_local_kind(self):
+        self.kind_cluster.stop()
 
     def display_confirmation_local_kind(self):
         ingress_ip = self.k8s_helper.get_ip_range()[0]
@@ -104,5 +99,5 @@ class ClusterHelper:
         print("************************************************************************************")
         print()
 
-    def display_confirmation_local_windows(self):
+    def noop(self):
         return

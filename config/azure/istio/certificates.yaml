@@ -1,0 +1,13 @@
+apiVersion: cert-manager.io/v1alpha2
+kind: Certificate
+metadata:
+  name: edge-cloud-micro-business-co-nz
+spec:
+  commonName: edgecloud.micro-business.co.nz
+  dnsNames:
+    - edgecloud.micro-business.co.nz
+    - api.edgecloud.micro-business.co.nz
+  issuerRef:
+    kind: ClusterIssuer
+    name: letsencrypt-staging
+  secretName: edge-cloud-micro-business-co-nz

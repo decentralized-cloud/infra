@@ -17,7 +17,7 @@ class EdgeCloudHelper:
         env_to_func_mapper = {
             "local_kind": self.deploy_config_local_kind_windows,
             "local_windows": self.deploy_config_local_kind_windows,
-            "local_windows": self.deploy_config_azure
+            "azure": self.deploy_config_azure
         }
 
         if not self.env in env_to_func_mapper:

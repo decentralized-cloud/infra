@@ -37,10 +37,10 @@ declare -a DockerImagesToPreload=(
     "docker.io/bitnami/mongodb:4.4.3-debian-10-r0"
 
     "rancher/k3s:v1.20.0-k3s2"
-    "decentralizedcloud/tenant:0.3.2"
-    "decentralizedcloud/edge-cluster:0.3.2"
-    "decentralizedcloud/api-gateway:0.2.2"
-    "decentralizedcloud/frontend:0.1.1"
+    "decentralizedcloud/project:latest"
+    "decentralizedcloud/edge-cluster:latest"
+    "decentralizedcloud/api-gateway:latest"
+    "decentralizedcloud/frontend:latest"
 )
 
 function set_local_variable() {
@@ -235,7 +235,7 @@ function stop() {
     fi
 }
 
-readonly EDGE_SERVICES="tenant api-gateway edge-cluster"
+readonly EDGE_SERVICES="project api-gateway edge-cluster"
 
 # TODO Clean up script
 function deploy_services() {

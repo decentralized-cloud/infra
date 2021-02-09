@@ -46,7 +46,7 @@ class ClusterHelper:
         env_to_deploy_metallb_func_mapper.get(self.env)()
 
         K8SDashboardHelper().deploy()
-        CertManagerHelper().deploy()
+        CertManagerHelper(self.env).deploy()
         IstioHelper().deploy()
         MongoDBHelper().deploy()
         EdgeCloudHelper(self.env).deploy_config()

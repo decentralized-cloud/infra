@@ -6,8 +6,12 @@ from system_helper import SystemHelper
 class CertManagerHelper:
     ''' Simplify deploying Cert Manager '''
 
+    env = ""
     config_helper = ConfigHelper()
     system_helper = SystemHelper()
+
+    def __init__(self, env):
+        self.env = env.lower()
 
     def deploy(self):
         self.system_helper.execute(
@@ -22,10 +26,12 @@ class CertManagerHelper:
                     certificates_directory, "ca.key"), certificate_file=path.join(
                     certificates_directory, "ca.crt")))
 
-        self.system_helper.execute(
-            "kubectl apply -n istio-system -f \"{config_file}\"".format(config_file=path.join(
-                self.config_helper.get_config_root_Directory(), "common", "cert-manager", "self-signed-clusterissuers.yaml")))
+        if self.env == "local_kind" or self.env == 'local_windows':
+            self.system_helper.execute(
+                "kubectl apply -n istio-system -f \"{config_file}\"".format(config_file=path.join(
+                    self.config_helper.get_config_root_Directory(), "common", "cert-manager", "self-signed-clusterissuers.yaml")))
 
-        self.system_helper.execute(
-            "kubectl apply -n istio-system -f \"{config_file}\"".format(config_file=path.join(
-                self.config_helper.get_config_root_Directory(), "common", "cert-manager", "godaddy-clusterissuers.yaml")))
+        if self.env == "azure":
+            self.system_helper.execute(
+                "kubectl apply -n istio-system -f \"{config_file}\"".format(config_file=path.join(
+                    self.config_helper.get_config_root_Directory(), "common", "cert-manager", "godaddy-clusterissuers.yaml")))

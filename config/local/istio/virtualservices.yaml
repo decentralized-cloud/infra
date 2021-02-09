@@ -39,7 +39,7 @@ spec:
               number: 80
       corsPolicy:
         allowOrigins:
-          - exact: https://edgecloud.micro-business.co.nz
+          - exact: https://edgecloud.com
         allowMethods:
           - POST
           - GET

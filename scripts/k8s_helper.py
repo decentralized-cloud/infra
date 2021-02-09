@@ -38,7 +38,7 @@ class K8SHelper:
 
             for label in environment['labels']:
                 self.system_helper.execute("kubectl label namespace {name} {label}".format(
-                    name=namespace['name'], label=label))
+                    name=environment['namespace'], label=label))
 
     def get_ip_range(self):
         config.load_kube_config()

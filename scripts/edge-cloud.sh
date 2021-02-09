@@ -55,7 +55,7 @@ function set_local_variable() {
         ISTIO_VIRTUALSERVICES_HTTPS_CONFIG=./config/local/istio/virtualservices-https.yaml
         
         # edge-cloud
-        EDGE_CLOUD_API_GATEWAY_URL="https://api.edge-cloud.com/graphql"
+        EDGE_CLOUD_API_GATEWAY_URL="https://api.devedgecloud.com/graphql"
         EDGE_CLOUD_AUTH0_DOMAIN="dev-lyrnhma6.auth0.com"
         EDGE_CLOUD_AUTH0_CLIENT_ID="3o25jdb1W3xG1UCkI2Z7WzbBdPjZWRoW"
     fi

@@ -95,7 +95,9 @@ class ClusterHelper:
         print("If you are using kind, you most likely got {ingress_ip} as its IP address".format(
             ingress_ip=ingress_ip))
         print("Add following line to your /etc/hosts file:")
-        print("{ingress_ip} edge-cloud.com".format(ingress_ip=ingress_ip))
+        print("{ingress_ip} devedgecloud.com".format(ingress_ip=ingress_ip))
+        print("{ingress_ip} testedgecloud.com".format(ingress_ip=ingress_ip))
+        print("{ingress_ip} edgecloud.com".format(ingress_ip=ingress_ip))
         print("************************************************************************************")
         print()
 

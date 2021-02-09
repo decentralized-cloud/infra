@@ -1,0 +1,58 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: frontend-edgecloud
+spec:
+  gateways:
+    - edgecloud-micro-business-co-nz-gateway
+  hosts:
+    - edgecloud.micro-business.co.nz
+  http:
+    - match:
+        - uri:
+            prefix: "/"
+          ignoreUriCase: true
+      route:
+        - destination:
+            host: frontend.edge.svc.cluster.local
+            port:
+              number: 80
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: api-edgecloud
+spec:
+  gateways:
+    - edgecloud-micro-business-co-nz-gateway
+  hosts:
+    - apiedgecloud.micro-business.co.nz
+  http:
+    - match:
+        - uri:
+            prefix: "/"
+          ignoreUriCase: true
+      route:
+        - destination:
+            host: api-gateway.edge.svc.cluster.local
+            port:
+              number: 80
+      corsPolicy:
+        allowOrigins:
+          - exact: https://edgecloud.micro-business.co.nz
+        allowMethods:
+          - POST
+          - GET
+          - OPTIONS
+        allowCredentials: false
+        allowHeaders:
+          - Origin
+          - DNT
+          - User-Agent
+          - X-Requested-With
+          - If-Modified-Since
+          - Cache-Control
+          - Content-Type
+          - Range
+          - Authorization
+        maxAge: "24h"

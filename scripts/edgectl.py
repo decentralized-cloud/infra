@@ -40,7 +40,7 @@ def main(args):
             raise Exception(
                 "stop and deploy-istio-addons cannot be used together")
 
-        cluster_helper = ClusterHelper(args.env)
+        cluster_helper = ClusterHelper(args.env, args.filter_environment)
 
         if args.start:
             cluster_helper.start(args.preload_images)
@@ -79,13 +79,21 @@ if __name__ == "__main__":
     parser.add_argument("--deploy-istio-addons", action="store_true",
                         default=False, help="Deploy istio addons")
     parser.add_argument("--env", action="store",
-                        default="local_kind", help="Specify the environment to start the cluster on. Possibles Options are: " +
+                        default="local_kind", help="Specify the deployment environment to start the cluster on. Possibles Options are: " +
                         linesep +
                         "local_kind" +
                         linesep +
                         "local_windows" +
                         linesep +
                         "azure")
+    parser.add_argument("--filter-environment", action="store",
+                        default="", help="Specify the different environments. Possibles Options are: " +
+                        linesep +
+                        "dev" +
+                        linesep +
+                        "test" +
+                        linesep +
+                        "prod")
     parser.add_argument(
         "--version",
         action="version",

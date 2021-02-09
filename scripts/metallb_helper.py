@@ -10,15 +10,18 @@ import tempfile
 class MetallbHelper:
     ''' Simplify deploying metallb '''
 
+    filterEnvironment = ""
     config_helper = ConfigHelper()
     system_helper = SystemHelper()
-    k8s_helper = K8SHelper()
+
+    def __init__(self, filterEnvironment):
+        self.filterEnvironment = filterEnvironment.lower()
 
     def deploy(self):
         self.system_helper.execute(
             "helm install metallb bitnami/metallb -n metallb-system --wait")
 
-        ip_range = self.k8s_helper.get_ip_range()
+        ip_range = K8SHelper(self.filterEnvironment).get_ip_range()
 
         config_file_path = path.join(
             self.config_helper.get_config_root_Directory(), "common", "metallb_config.yaml")

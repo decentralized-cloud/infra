@@ -8,8 +8,12 @@ from kubernetes import client, config
 class K8SHelper:
     ''' Provide different functionality specific to K8S cluster that are required to deploy different resources '''
 
+    filterEnvironment = ""
     config_helper = ConfigHelper()
     system_helper = SystemHelper()
+
+    def __init__(self, filterEnvironment):
+        self.filterEnvironment = filterEnvironment.lower()
 
     def create_namespaces(self):
         namespaces = self.get_all_namespaces()
@@ -19,6 +23,20 @@ class K8SHelper:
                 "kubectl create namespace {name}".format(name=namespace['name']))
 
             for label in namespace['labels']:
+                self.system_helper.execute("kubectl label namespace {name} {label}".format(
+                    name=namespace['name'], label=label))
+
+        environments = self.config_helper.get_environments()
+
+        for environment in environments:
+            if self.filterEnvironment != '':
+                if environment['name'] != self.filterEnvironment:
+                    continue
+
+            self.system_helper.execute(
+                "kubectl create namespace {name}".format(name=environment['namespace']))
+
+            for label in environment['labels']:
                 self.system_helper.execute("kubectl label namespace {name} {label}".format(
                     name=namespace['name'], label=label))
 

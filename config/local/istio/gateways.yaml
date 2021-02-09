@@ -1,30 +1,30 @@
 apiVersion: networking.istio.io/v1alpha3
 kind: Gateway
 metadata:
-  name: edge-cloud-gateway
+  name: edgecloud-gateway
 spec:
   selector:
     istio: ingressgateway # use istio default controller
   servers:
     - hosts:
-        - edge-cloud.com
+        - edgecloud.com
       port:
-        name: https-443-edge-cloud-com
+        name: https-443-edgecloud-com
         number: 443
         protocol: HTTPS
       tls:
-        credentialName: edge-cloud-com
+        credentialName: edgecloud-com
         mode: SIMPLE
         privateKey: sds
         serverCertificate: sds
     - hosts:
-        - api.edge-cloud.com
+        - api.edgecloud.com
       port:
-        name: https-443-api-edge-cloud-com
+        name: https-443-api-edgecloud-com
         number: 443
         protocol: HTTPS
       tls:
-        credentialName: edge-cloud-com
+        credentialName: edgecloud-com
         mode: SIMPLE
         privateKey: sds
         serverCertificate: sds

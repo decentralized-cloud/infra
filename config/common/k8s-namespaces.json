@@ -10,11 +10,5 @@
   {
     "name": "istio-system",
     "labels": []
-  },
-  {
-    "name": "edge",
-    "labels": [
-      "istio-injection=enabled"
-    ]
   }
 ]

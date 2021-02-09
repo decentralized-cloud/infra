@@ -15,3 +15,8 @@ class ConfigHelper:
         with open(path.join(
                 self.config_directory_path, "common", "docker", "images.json")) as f:
             return json.load(f)
+
+    def get_environments(self):
+        with open(path.join(
+                self.config_directory_path, "common", "edge-cloud", "environments.json")) as f:
+            return json.load(f)

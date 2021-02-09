@@ -12,12 +12,12 @@ class ClusterHelper:
     ''' Simplify working with different type cluster such as those created by Kind '''
 
     env = ""
+    filterEnvironment = ""
     kind_cluster = KindCluster()
-    k8s_helper = K8SHelper()
-    metallb_helper = MetallbHelper()
 
-    def __init__(self, env):
+    def __init__(self, env, filterEnvironment):
         self.env = env.lower()
+        self.filterEnvironment = filterEnvironment.lower()
 
     def start(self, preload_images):
         env_to_start_func_mapper = {
@@ -31,7 +31,7 @@ class ClusterHelper:
                 "Environment '{env}' is not supported".format(env=self.env))
 
         env_to_start_func_mapper.get(self.env)(preload_images)
-        self.k8s_helper.create_namespaces()
+        K8SHelper(self.filterEnvironment).create_namespaces()
 
         env_to_deploy_metallb_func_mapper = {
             "local_kind": self.deploy_metallb_local_kind,
@@ -48,8 +48,8 @@ class ClusterHelper:
         K8SDashboardHelper().deploy()
         CertManagerHelper(self.env).deploy()
         IstioHelper().deploy()
-        MongoDBHelper().deploy()
-        EdgeCloudHelper(self.env).deploy_config()
+        MongoDBHelper(self.filterEnvironment).deploy()
+        EdgeCloudHelper(self.env, self.filterEnvironment).deploy_config()
 
         env_to_display_confirmation_func_mapper = {
             "local_kind": self.display_confirmation_local_kind,
@@ -80,13 +80,13 @@ class ClusterHelper:
         self.kind_cluster.start(preload_images)
 
     def deploy_metallb_local_kind(self):
-        self.metallb_helper.deploy()
+        MetallbHelper(self.filterEnvironment).deploy()
 
     def stop_local_kind(self):
         self.kind_cluster.stop()
 
     def display_confirmation_local_kind(self):
-        ingress_ip = self.k8s_helper.get_ip_range()[0]
+        ingress_ip = K8SHelper(self.filterEnvironment).get_ip_range()[0]
 
         print()
         print("************************************************************************************")

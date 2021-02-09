@@ -289,10 +289,10 @@ function deploy_services() {
 
 function remove_services() {
     for service in $EDGE_SERVICES; do
-        helm uninstall "$service" -n edge || true
+        helm uninstall "$service" -n dev || true
     done
     
-    helm uninstall "frontend" -n edge || true
+    helm uninstall "frontend" -n dev || true
 }
 
 function deploy_a_service() {
@@ -304,7 +304,7 @@ function deploy_a_service() {
     
     helm install "$2" \
     decentralized-cloud/"$2" \
-    -n edge \
+    -n dev \
     --version "$helm_chart_version" \
     --set image.tag="$app_version" \
     --set image.pullPolicy=$image_pull_policy
@@ -318,7 +318,7 @@ function deploy_frontend_service() {
     echo -e "\nInstalling helm chart for frontend helm_chart_version=$helm_chart_version app_version=$app_version\n"
     
     helm install "frontend" decentralized-cloud/"frontend" \
-    -n edge \
+    -n dev \
     --version "$helm_chart_version" \
     --set image.tag="$app_version" \
     --set image.pullPolicy=$image_pull_policy \

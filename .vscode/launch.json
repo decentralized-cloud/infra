@@ -10,7 +10,8 @@
             "request": "launch",
             "program": "/home/morteza/projects/go/src/github.com/decentralized-cloud/infra/scripts/edgectl.py",
             "console": "integratedTerminal",
-            "args": ["--start", "--filter-environment", "dev"],
+            "args": ["--start", "--env", "azure"],
+            //"args": ["--start", "--filter-environment", "dev"],
 //            "args": ["--deploy-istio-addons"]
         }
     ]

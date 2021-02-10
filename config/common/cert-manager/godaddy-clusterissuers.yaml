@@ -9,9 +9,6 @@ spec:
     privateKeySecretRef:
       name: edge-cloud-clusterissuer-account-key
     solvers:
-    - selector:
-      dnsNames:
-      - '*.micro-business.co.nz'
       - dns01:
           webhook:
             config:
@@ -19,8 +16,11 @@ spec:
               authApiSecret: <your GoDaddy authApiSecret>
               production: true
               ttl: 600
-            groupName: acme.mycompany.com
+            groupName: acme.micro-business.co.nz
             solverName: godaddy
+        selector:
+          dnsNames:
+            - "micro-business.co.nz"
 ---
 apiVersion: cert-manager.io/v1alpha2
 kind: ClusterIssuer
@@ -33,9 +33,6 @@ spec:
     privateKeySecretRef:
       name: edge-cloud-staging-clusterissuer-account-key
     solvers:
-    - selector:
-      dnsNames:
-      - '*.micro-business.co.nz'
       - dns01:
           webhook:
             config:
@@ -43,5 +40,8 @@ spec:
               authApiSecret: <your GoDaddy authApiSecret>
               production: false
               ttl: 600
-            groupName: acme.mycompany.com
+            groupName: acme.micro-business.co.nz
             solverName: godaddy
+        selector:
+          dnsNames:
+            - "micro-business.co.nz"

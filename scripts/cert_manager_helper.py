@@ -32,6 +32,12 @@ class CertManagerHelper:
                     self.config_helper.get_config_root_Directory(), "common", "cert-manager", "self-signed-clusterissuers.yaml")))
 
         if self.env == "azure":
+            godaddy = path.join(
+                path.dirname(__file__), "..", "godaddy-webhook", "deploy", "godaddy-webhook")
+
+            self.system_helper.execute(
+                "helm install godaddy-webhook --namespace cert-manager {godaddy} --wait".format(godaddy=godaddy))
+
             self.system_helper.execute(
                 "kubectl apply -n istio-system -f \"{config_file}\"".format(config_file=path.join(
                     self.config_helper.get_config_root_Directory(), "common", "cert-manager", "godaddy-clusterissuers.yaml")))

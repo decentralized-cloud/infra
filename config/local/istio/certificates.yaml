@@ -1,4 +1,4 @@
-apiVersion: cert-manager.io/v1alpha2
+apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: edgecloud-com
@@ -8,6 +8,6 @@ spec:
     - edgecloud.com
     - api.edgecloud.com
   issuerRef:
-    kind: ClusterIssuer
+    kind: Issuer
     name: selfsigned-issuer
   secretName: edgecloud-com

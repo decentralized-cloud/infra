@@ -1,4 +1,4 @@
-apiVersion: cert-manager.io/v1alpha2
+apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: edgecloud-micro-business-co-nz
@@ -7,11 +7,11 @@ spec:
   dnsNames:
     - edgecloud.micro-business.co.nz
   issuerRef:
-    kind: ClusterIssuer
+    kind: Issuer
     name: letsencrypt
   secretName: edgecloud-micro-business-co-nz
 ---
-apiVersion: cert-manager.io/v1alpha2
+apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: api-edgecloud-micro-business-co-nz
@@ -20,6 +20,6 @@ spec:
   dnsNames:
     - apiedgecloud.micro-business.co.nz
   issuerRef:
-    kind: ClusterIssuer
+    kind: Issuer
     name: letsencrypt
   secretName: api-edgecloud-micro-business-co-nz

@@ -1,5 +1,5 @@
-apiVersion: cert-manager.io/v1alpha2
-kind: ClusterIssuer
+apiVersion: cert-manager.io/v1
+kind: Issuer
 metadata:
   name: letsencrypt
 spec:
@@ -7,7 +7,7 @@ spec:
     email: morteza.alizadeh@gmail.com
     server: "https://acme-v02.api.letsencrypt.org/directory"
     privateKeySecretRef:
-      name: edge-cloud-clusterissuer-account-key
+      name: edge-cloud-issuer-account-key
     solvers:
       - dns01:
           webhook:
@@ -27,8 +27,8 @@ spec:
             - "edgecloud.micro-business.co.nz"
             - "apiedgecloud.micro-business.co.nz"
 ---
-apiVersion: cert-manager.io/v1alpha2
-kind: ClusterIssuer
+apiVersion: cert-manager.io/v1
+kind: Issuer
 metadata:
   name: letsencrypt-staging
 spec:
@@ -36,7 +36,7 @@ spec:
     email: morteza.alizadeh@gmail.com
     server: https://acme-staging-v02.api.letsencrypt.org/directory
     privateKeySecretRef:
-      name: edge-cloud-staging-clusterissuer-account-key
+      name: edge-cloud-staging-issuer-account-key
     solvers:
       - dns01:
           webhook:

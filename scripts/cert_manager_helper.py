@@ -22,7 +22,7 @@ class CertManagerHelper:
                 path.dirname(__file__), "..", "certificates")
 
             self.system_helper.execute(
-                "kubectl create -n cert-manager secret tls ca-key-pair --key=\"{keypair_file}\" --cert=\"{certificate_file}\"".format(
+                "kubectl create -n istio-system secret tls ca-key-pair --key=\"{keypair_file}\" --cert=\"{certificate_file}\"".format(
                     keypair_file=path.join(
                         certificates_directory, "ca.key"), certificate_file=path.join(
                         certificates_directory, "ca.crt")))

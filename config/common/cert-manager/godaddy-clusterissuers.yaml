@@ -18,13 +18,8 @@ spec:
       name: edge-cloud-issuer-account-key
     solvers:
       - selector:
-          dnsNames:
-            - "devedgecloud.micro-business.co.nz"
-            - "apidevedgecloud.micro-business.co.nz"
-            - "testedgecloud.micro-business.co.nz"
-            - "apitestedgecloud.micro-business.co.nz"
-            - "edgecloud.micro-business.co.nz"
-            - "apiedgecloud.micro-business.co.nz"
+          dnsZones:
+            - "micro-business.co.nz"
         dns01:
           webhook:
             config:
@@ -33,7 +28,7 @@ spec:
                 key: token
               production: true
               ttl: 600
-            groupName: acme.mycompany.com
+            groupName: acme.micro-business.co.nz
             solverName: godaddy
 ---
 apiVersion: cert-manager.io/v1
@@ -48,13 +43,8 @@ spec:
       name: edge-cloud-staging-issuer-account-key
     solvers:
       - selector:
-          dnsNames:
-            - "devedgecloud.micro-business.co.nz"
-            - "apidevedgecloud.micro-business.co.nz"
-            - "testedgecloud.micro-business.co.nz"
-            - "apitestedgecloud.micro-business.co.nz"
-            - "edgecloud.micro-business.co.nz"
-            - "apiedgecloud.micro-business.co.nz"
+          dnsZones:
+            - "micro-business.co.nz"
         dns01:
           webhook:
             config:
@@ -63,5 +53,5 @@ spec:
                 key: token
               production: false
               ttl: 600
-            groupName: acme.mycompany.com
+            groupName: acme.micro-business.co.nz
             solverName: godaddy

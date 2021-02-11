@@ -19,7 +19,7 @@ class MetallbHelper:
 
     def deploy(self):
         self.system_helper.execute(
-            "helm install metallb bitnami/metallb -n metallb-system --wait")
+            "helm upgrade --install metallb bitnami/metallb -n metallb-system --wait")
 
         ip_range = K8SHelper(self.filterEnvironment).get_ip_range()
 

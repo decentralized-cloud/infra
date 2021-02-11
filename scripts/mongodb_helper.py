@@ -22,7 +22,7 @@ class MongoDBHelper:
                     continue
 
             self.system_helper.execute(
-                ("helm install mongodb bitnami/mongodb "
+                ("helm upgrade --install mongodb bitnami/mongodb "
                  "--set volumePermissions.enabled=true "
                  "--set auth.enabled=false "
                  "--set persistence.enabled=false "

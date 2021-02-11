@@ -128,7 +128,7 @@ function create_and_configure_namespaces() {
 }
 
 function deploy_metallb() {
-    helm install metallb \
+    helm upgrade --install metallb \
     bitnami/metallb \
     -n metallb-system \
     --wait
@@ -143,7 +143,7 @@ function deploy_kubernetes_dashboard() {
 }
 
 function deploy_cert_manager() {
-    helm install \
+    helm upgrade --install \
     cert-manager jetstack/cert-manager \
     --namespace cert-manager \
     --version v1.1.0 \
@@ -167,7 +167,7 @@ function deploy_istio_addons() {
 }
 
 function deploy_mongodb() {
-    helm install mongodb \
+    helm upgrade --install mongodb \
     bitnami/mongodb \
     --set volumePermissions.enabled=true \
     --set auth.enabled=false \
@@ -302,7 +302,7 @@ function deploy_a_service() {
     
     echo -e "\nInstalling helm chart for $2 helm_chart_version=$helm_chart_version app_version=$app_version\n"
     
-    helm install "$2" \
+    helm upgrade --install "$2" \
     decentralized-cloud/"$2" \
     -n dev \
     --version "$helm_chart_version" \
@@ -317,7 +317,7 @@ function deploy_frontend_service() {
     
     echo -e "\nInstalling helm chart for frontend helm_chart_version=$helm_chart_version app_version=$app_version\n"
     
-    helm install "frontend" decentralized-cloud/"frontend" \
+    helm upgrade --install "frontend" decentralized-cloud/"frontend" \
     -n dev \
     --version "$helm_chart_version" \
     --set image.tag="$app_version" \

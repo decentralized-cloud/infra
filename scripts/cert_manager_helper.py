@@ -15,7 +15,7 @@ class CertManagerHelper:
 
     def deploy(self):
         self.system_helper.execute(
-            "helm install cert-manager jetstack/cert-manager --namespace cert-manager --version v1.1.0 --set installCRDs=true --wait")
+            "helm upgrade --install cert-manager jetstack/cert-manager --namespace cert-manager --version v1.1.0 --set installCRDs=true --wait")
 
         if self.env == "local_kind" or self.env == 'local_windows':
             certificates_directory = path.join(
@@ -36,7 +36,7 @@ class CertManagerHelper:
                 path.dirname(__file__), "..", "godaddy-webhook", "deploy", "godaddy-webhook")
 
             self.system_helper.execute(
-                "helm install godaddy-webhook --namespace cert-manager {godaddy} --wait".format(godaddy=godaddy))
+                "helm upgrade --install godaddy-webhook --namespace cert-manager {godaddy} --wait".format(godaddy=godaddy))
 
             self.system_helper.execute(
                 "kubectl apply -n istio-system -f \"{config_file}\"".format(config_file=path.join(

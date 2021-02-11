@@ -12,15 +12,20 @@ spec:
       - dns01:
           webhook:
             config:
-              authApiKey: <your GoDaddy authAPIKey>
-              authApiSecret: <your GoDaddy authApiSecret>
+              authApiKey: <key>
+              authApiSecret: <secret>
               production: true
               ttl: 600
             groupName: acme.micro-business.co.nz
             solverName: godaddy
         selector:
           dnsNames:
-            - "micro-business.co.nz"
+            - "devedgecloud.micro-business.co.nz"
+            - "apidevedgecloud.micro-business.co.nz"
+            - "testedgecloud.micro-business.co.nz"
+            - "apitestedgecloud.micro-business.co.nz"
+            - "edgecloud.micro-business.co.nz"
+            - "apiedgecloud.micro-business.co.nz"
 ---
 apiVersion: cert-manager.io/v1alpha2
 kind: ClusterIssuer
@@ -36,12 +41,17 @@ spec:
       - dns01:
           webhook:
             config:
-              authApiKey: <your GoDaddy authAPIKey>
-              authApiSecret: <your GoDaddy authApiSecret>
+              authApiKey: <key>
+              authApiSecret: <secret>
               production: false
               ttl: 600
             groupName: acme.micro-business.co.nz
             solverName: godaddy
         selector:
           dnsNames:
-            - "micro-business.co.nz"
+            - "devedgecloud.micro-business.co.nz"
+            - "apidevedgecloud.micro-business.co.nz"
+            - "testedgecloud.micro-business.co.nz"
+            - "apitestedgecloud.micro-business.co.nz"
+            - "edgecloud.micro-business.co.nz"
+            - "apiedgecloud.micro-business.co.nz"

@@ -28,7 +28,7 @@ spec:
                 key: token
               production: true
               ttl: 600
-            groupName: acme.micro-business.co.nz
+            groupName: acme.mycompany.com
             solverName: godaddy
 ---
 apiVersion: cert-manager.io/v1
@@ -53,5 +53,5 @@ spec:
                 key: token
               production: false
               ttl: 600
-            groupName: acme.micro-business.co.nz
+            groupName: acme.mycompany.com
             solverName: godaddy

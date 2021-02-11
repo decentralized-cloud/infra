@@ -1,3 +1,11 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: gadaddy-api-key
+type: Opaque
+stringData:
+  token: <key:secret>
+---
 apiVersion: cert-manager.io/v1
 kind: Issuer
 metadata:
@@ -9,16 +17,7 @@ spec:
     privateKeySecretRef:
       name: edge-cloud-issuer-account-key
     solvers:
-      - dns01:
-          webhook:
-            config:
-              authApiKey: <key>
-              authApiSecret: <secret>
-              production: true
-              ttl: 600
-            groupName: acme.micro-business.co.nz
-            solverName: godaddy
-        selector:
+      - selector:
           dnsNames:
             - "devedgecloud.micro-business.co.nz"
             - "apidevedgecloud.micro-business.co.nz"
@@ -26,6 +25,16 @@ spec:
             - "apitestedgecloud.micro-business.co.nz"
             - "edgecloud.micro-business.co.nz"
             - "apiedgecloud.micro-business.co.nz"
+        dns01:
+          webhook:
+            config:
+              apiKeySecretRef:
+                name: gadaddy-api-key
+                key: token
+              production: true
+              ttl: 600
+            groupName: acme.mycompany.com
+            solverName: godaddy
 ---
 apiVersion: cert-manager.io/v1
 kind: Issuer
@@ -38,16 +47,7 @@ spec:
     privateKeySecretRef:
       name: edge-cloud-staging-issuer-account-key
     solvers:
-      - dns01:
-          webhook:
-            config:
-              authApiKey: <key>
-              authApiSecret: <secret>
-              production: false
-              ttl: 600
-            groupName: acme.micro-business.co.nz
-            solverName: godaddy
-        selector:
+      - selector:
           dnsNames:
             - "devedgecloud.micro-business.co.nz"
             - "apidevedgecloud.micro-business.co.nz"
@@ -55,3 +55,13 @@ spec:
             - "apitestedgecloud.micro-business.co.nz"
             - "edgecloud.micro-business.co.nz"
             - "apiedgecloud.micro-business.co.nz"
+        dns01:
+          webhook:
+            config:
+              apiKeySecretRef:
+                name: gadaddy-api-key
+                key: token
+              production: false
+              ttl: 600
+            groupName: acme.mycompany.com
+            solverName: godaddy

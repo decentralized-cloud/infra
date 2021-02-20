@@ -1,25 +1,25 @@
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: edgecloud-micro-business-co-nz
+  name: console-edgecloud9-io
 spec:
-  commonName: edgecloud.micro-business.co.nz
+  commonName: console.edgecloud9.io
   dnsNames:
-    - edgecloud.micro-business.co.nz
+    - console.edgecloud9.io
   issuerRef:
     kind: Issuer
     name: letsencrypt
-  secretName: edgecloud-micro-business-co-nz
+  secretName: console-edgecloud9-io
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: api-edgecloud-micro-business-co-nz
+  name: api-edgecloud9-io
 spec:
-  commonName: apiedgecloud.micro-business.co.nz
+  commonName: api.edgecloud9.io
   dnsNames:
-    - apiedgecloud.micro-business.co.nz
+    - api.edgecloud9.io
   issuerRef:
     kind: Issuer
     name: letsencrypt
-  secretName: api-edgecloud-micro-business-co-nz
+  secretName: api-edgecloud9-io

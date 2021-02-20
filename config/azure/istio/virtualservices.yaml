@@ -4,9 +4,9 @@ metadata:
   name: frontend-edgecloud
 spec:
   gateways:
-    - edgecloud-micro-business-co-nz-gateway
+    - console-edgecloud9-io-gateway
   hosts:
-    - edgecloud.micro-business.co.nz
+    - console.edgecloud9.io
   http:
     - match:
         - uri:
@@ -24,9 +24,9 @@ metadata:
   name: api-edgecloud
 spec:
   gateways:
-    - edgecloud-micro-business-co-nz-gateway
+    - console-edgecloud9-io-gateway
   hosts:
-    - apiedgecloud.micro-business.co.nz
+    - api.edgecloud9.io
   http:
     - match:
         - uri:
@@ -39,7 +39,7 @@ spec:
               number: 80
       corsPolicy:
         allowOrigins:
-          - exact: https://edgecloud.micro-business.co.nz
+          - exact: https://console.edgecloud9.io
         allowMethods:
           - POST
           - GET

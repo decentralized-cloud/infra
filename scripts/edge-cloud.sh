@@ -60,13 +60,6 @@ function set_local_variable() {
         EDGE_CLOUD_AUTH0_CLIENT_ID="3o25jdb1W3xG1UCkI2Z7WzbBdPjZWRoW"
     fi
     
-    if [ "$ENVIRONMENT" = "AZURE" ]; then
-        # edge-cloud
-        EDGE_CLOUD_API_GATEWAY_URL="https://apiedgecloud.micro-business.co.nz/graphql"
-        EDGE_CLOUD_AUTH0_DOMAIN="dev-lyrnhma6.auth0.com"
-        EDGE_CLOUD_AUTH0_CLIENT_ID="oX4KpAVnXSa2gHbRbo1O1w2dd4Q0danj"
-    fi
-    
     if [ "$ENVIRONMENT" = "LOCAL_DEMO_SERVER" ]; then
         DEMO_SERVER_CALICO=./config/local-demo-server/calico.yaml
         
@@ -327,7 +320,7 @@ function deploy_frontend_service() {
     --set pod.idp.auth0ClientId="$EDGE_CLOUD_AUTH0_CLIENT_ID"
 }
 
-if [ "$ENVIRONMENT" != "" ] && [ "$ENVIRONMENT" != "LOCAL_KIND" ] && [ "$ENVIRONMENT" != "LOCAL_DEMO_SERVER" ] && [ "$ENVIRONMENT" != "AZURE" ]; then
+if [ "$ENVIRONMENT" != "" ] && [ "$ENVIRONMENT" != "LOCAL_KIND" ] && [ "$ENVIRONMENT" != "LOCAL_DEMO_SERVER" ]; then
     echo "Provided environment not supported: $ENVIRONMENT"
     exit 0
 fi

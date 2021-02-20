@@ -19,7 +19,7 @@ spec:
     solvers:
       - selector:
           dnsZones:
-            - "micro-business.co.nz"
+            - "edgecloud9.io"
         dns01:
           webhook:
             config:
@@ -44,7 +44,7 @@ spec:
     solvers:
       - selector:
           dnsZones:
-            - "micro-business.co.nz"
+            - "edgecloud9.io"
         dns01:
           webhook:
             config:

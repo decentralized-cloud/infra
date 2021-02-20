@@ -78,16 +78,16 @@ class EdgeCloudHelper:
         with open(config_file_path) as file:
             content = file.read()
 
-            content = content.replace('console.', '{prefix}console.'.format(
+            content = content.replace('consoleedgecloud9', '{prefix}consoleedgecloud9'.format(
+                prefix=environment['namespace']))
+
+            content = content.replace('console.edgecloud9', '{prefix}console.edgecloud9'.format(
                 prefix=environment['url_prefix']))
 
-            content = content.replace('console-', '{prefix}console-'.format(
-                prefix=environment['url_prefix']))
+            content = content.replace('apiedgecloud9', '{prefix}apiedgecloud9'.format(
+                prefix=environment['namespace']))
 
-            content = content.replace('api.', '{prefix}api.'.format(
-                prefix=environment['url_prefix']))
-
-            content = content.replace('api-', '{prefix}api-'.format(
+            content = content.replace('api.edgecloud9', '{prefix}api.edgecloud9'.format(
                 prefix=environment['url_prefix']))
 
             content = content.replace('.edge.svc', '.{namespace}.svc'.format(

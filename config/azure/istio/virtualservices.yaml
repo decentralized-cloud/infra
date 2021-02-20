@@ -4,7 +4,7 @@ metadata:
   name: frontend-edgecloud
 spec:
   gateways:
-    - console-edgecloud9-io-gateway
+    - edgecloud9-io-gateway
   hosts:
     - console.edgecloud9.io
   http:
@@ -24,7 +24,7 @@ metadata:
   name: api-edgecloud
 spec:
   gateways:
-    - console-edgecloud9-io-gateway
+    - edgecloud9-io-gateway
   hosts:
     - api.edgecloud9.io
   http:
@@ -39,7 +39,7 @@ spec:
               number: 80
       corsPolicy:
         allowOrigins:
-          - exact: https://console.edgecloud9.io
+          - exact: "*"
         allowMethods:
           - POST
           - GET

@@ -7,17 +7,6 @@ spec:
     istio: ingressgateway
   servers:
     - hosts:
-        - console.edgecloud9.io
-      port:
-        name: https-443-consoleedgecloud9-io
-        number: 443
-        protocol: HTTPS
-      tls:
-        credentialName: consoleedgecloud9-io
-        mode: SIMPLE
-        privateKey: sds
-        serverCertificate: sds
-    - hosts:
         - api.edgecloud9.io
       port:
         name: https-443-apiedgecloud9-io

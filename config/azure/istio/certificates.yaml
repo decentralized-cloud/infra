@@ -1,19 +1,6 @@
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: consoleedgecloud9-io
-spec:
-  commonName: console.edgecloud9.io
-  dnsNames:
-    - console.edgecloud9.io
-  issuerRef:
-    kind: Issuer
-    name: letsencrypt
-  secretName: consoleedgecloud9-io
----
-apiVersion: cert-manager.io/v1
-kind: Certificate
-metadata:
   name: apiedgecloud9-io
 spec:
   commonName: api.edgecloud9.io

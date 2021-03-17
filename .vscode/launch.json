@@ -10,7 +10,7 @@
             "request": "launch",
             "program": "/home/morteza/projects/go/src/github.com/decentralized-cloud/infra/scripts/edgectl.py",
             "console": "integratedTerminal",
-            "args": ["--start", "--env", "local", "--filter-environment", "dev"]
+            "args": ["--start", "--env", "local_kind", "--filter-environment", "dev"]
         }
     ]
 }

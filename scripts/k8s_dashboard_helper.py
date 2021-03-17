@@ -15,11 +15,11 @@ class K8SDashboardHelper:
 
         self.system_helper.execute(
             "kubectl apply -f \"{config_file}\"".format(config_file=path.join(
-                self.config_helper.get_config_root_Directory(), "common", "k8s-dashboard", "service-account.yaml")))
+                self.config_helper.get_config_root_directory(), "common", "k8s-dashboard", "service-account.yaml")))
 
         self.system_helper.execute(
             "kubectl apply -f \"{config_file}\"".format(config_file=path.join(
-                self.config_helper.get_config_root_Directory(), "common", "k8s-dashboard", "role.yaml")))
+                self.config_helper.get_config_root_directory(), "common", "k8s-dashboard", "role.yaml")))
 
         self.system_helper.execute(
             "kubectl -n kubernetes-dashboard describe secret $(kubectl -n kubernetes-dashboard get secret | grep admin-user | awk '{print $1}')")

@@ -24,7 +24,7 @@ class MetallbHelper:
         ip_range = K8SHelper(self.filterEnvironment).get_ip_range()
 
         config_file_path = path.join(
-            self.config_helper.get_config_root_Directory(), "common", "metallb_config.yaml")
+            self.config_helper.get_config_root_directory(), "common", "metallb_config.yaml")
 
         tmp_file_name = path.join(tempfile._get_default_tempdir(), next(
             tempfile._get_candidate_names()))

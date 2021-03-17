@@ -5,11 +5,23 @@ from os import path
 class ConfigHelper:
     ''' Simplify working with the different required configuration files '''
 
+    root_directory_path = path.join(
+        path.dirname(__file__), "..")
+
     config_directory_path = path.join(
         path.dirname(__file__), "..", "config")
 
-    def get_config_root_Directory(self):
+    docker_directory_path = path.join(
+        path.dirname(__file__), "..", "docker")
+
+    def get_root_directory(self):
+        return self.root_directory_path
+
+    def get_config_root_directory(self):
         return self.config_directory_path
+
+    def get_docker_directory(self):
+        return self.docker_directory_path
 
     def get_required_docker_images(self):
         with open(path.join(

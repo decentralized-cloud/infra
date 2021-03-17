@@ -29,7 +29,7 @@ class CertManagerHelper:
 
             self.system_helper.execute(
                 "kubectl apply -n istio-system -f \"{config_file}\"".format(config_file=path.join(
-                    self.config_helper.get_config_root_Directory(), "common", "cert-manager", "self-signed-clusterissuers.yaml")))
+                    self.config_helper.get_config_root_directory(), "common", "cert-manager", "self-signed-clusterissuers.yaml")))
 
         if self.env == "remote":
             godaddy = path.join(
@@ -40,4 +40,4 @@ class CertManagerHelper:
 
             self.system_helper.execute(
                 "kubectl apply -n istio-system -f \"{config_file}\"".format(config_file=path.join(
-                    self.config_helper.get_config_root_Directory(), "common", "cert-manager", "godaddy-clusterissuers.yaml")))
+                    self.config_helper.get_config_root_directory(), "common", "cert-manager", "godaddy-clusterissuers.yaml")))

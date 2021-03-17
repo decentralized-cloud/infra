@@ -54,5 +54,5 @@ class K8SHelper:
 
     def get_all_namespaces(self):
         with open(path.join(
-                self.config_helper.get_config_root_Directory(), "common", "k8s-namespaces.json")) as f:
+                self.config_helper.get_config_root_directory(), "common", "k8s-namespaces.json")) as f:
             return json.load(f)

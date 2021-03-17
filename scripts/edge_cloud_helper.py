@@ -45,7 +45,7 @@ class EdgeCloudHelper:
                     continue
 
             rootPath = path.join(
-                self.config_helper.get_config_root_Directory(), env, "istio")
+                self.config_helper.get_config_root_directory(), env, "istio")
 
             # Creating Certificates
             tmp_config_file = self.transformConfigFileContent(

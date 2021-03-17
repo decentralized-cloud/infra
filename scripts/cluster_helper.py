@@ -91,13 +91,12 @@ class ClusterHelper:
         print()
         print("************************************************************************************")
         print(
-            "You need to make sure edge-cloud.com is added to your /etc/hosts file locally")
+            "You need to make sure edgecloud.com is added to your /etc/hosts file locally")
         print("If you are using kind, you most likely got {ingress_ip} as its IP address".format(
             ingress_ip=ingress_ip))
         print("Add following line to your /etc/hosts file:")
-        print("{ingress_ip} devedgecloud.com".format(ingress_ip=ingress_ip))
-        print("{ingress_ip} testedgecloud.com".format(ingress_ip=ingress_ip))
         print("{ingress_ip} edgecloud.com".format(ingress_ip=ingress_ip))
+        print("{ingress_ip} api.edgecloud.com".format(ingress_ip=ingress_ip))
         print("************************************************************************************")
         print()
 

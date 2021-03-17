@@ -1,21 +1,26 @@
 {
+    "user": {
+        "helm_chart_version": "0.1.1",
+        "app_version": "latest",
+        "image_pull_policy": "Always"
+    },
     "project": {
-        "helm_chart_version": "0.2.1",
+        "helm_chart_version": "0.2.3",
         "app_version": "latest",
         "image_pull_policy": "Always"
     },
     "edge-cluster": {
-        "helm_chart_version": "0.2.6",
-        "app_version": "latest",
-        "image_pull_policy": "Always"
-    },
-    "frontend": {
-        "helm_chart_version": "0.2.1",
+        "helm_chart_version": "0.2.10",
         "app_version": "latest",
         "image_pull_policy": "Always"
     },
     "api-gateway": {
-        "helm_chart_version": "0.2.1",
+        "helm_chart_version": "0.2.2",
+        "app_version": "latest",
+        "image_pull_policy": "Always"
+    },
+    "console": {
+        "helm_chart_version": "0.1.0",
         "app_version": "latest",
         "image_pull_policy": "Always"
     }

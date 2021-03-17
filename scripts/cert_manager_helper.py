@@ -31,7 +31,7 @@ class CertManagerHelper:
                 "kubectl apply -n istio-system -f \"{config_file}\"".format(config_file=path.join(
                     self.config_helper.get_config_root_Directory(), "common", "cert-manager", "self-signed-clusterissuers.yaml")))
 
-        if self.env == "azure":
+        if self.env == "remote":
             godaddy = path.join(
                 path.dirname(__file__), "..", "godaddy-webhook", "deploy", "godaddy-webhook")
 

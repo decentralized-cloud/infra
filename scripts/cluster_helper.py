@@ -23,7 +23,7 @@ class ClusterHelper:
         env_to_start_func_mapper = {
             "local_kind": self.start_local_kind,
             "local_windows": self.start_local_windows,
-            "azure": self.start_azure
+            "remote": self.start_remote
         }
 
         if not self.env in env_to_start_func_mapper:
@@ -36,7 +36,7 @@ class ClusterHelper:
         env_to_deploy_metallb_func_mapper = {
             "local_kind": self.deploy_metallb_local_kind,
             "local_windows": self.deploy_metallb_local_windows,
-            "azure": self.deploy_metallb_azure
+            "remote": self.deploy_metallb_remote
         }
 
         if not self.env in env_to_deploy_metallb_func_mapper:
@@ -54,7 +54,7 @@ class ClusterHelper:
         env_to_display_confirmation_func_mapper = {
             "local_kind": self.display_confirmation_local_kind,
             "local_windows": self.display_confirmation_local_windows,
-            "azure": self.display_confirmation_azure
+            "remote": self.display_confirmation_remote
         }
 
         if not self.env in env_to_display_confirmation_func_mapper:
@@ -67,7 +67,7 @@ class ClusterHelper:
         env_to_func_mapper = {
             "local_kind": self.stop_local_kind,
             "local_windows": self.stop_local_windows,
-            "azure": self.stop_azure
+            "remote": self.stop_remote
         }
 
         if not self.env in env_to_func_mapper:
@@ -113,14 +113,14 @@ class ClusterHelper:
     def display_confirmation_local_windows(self):
         return
 
-    def start_azure(self, preload_images):
+    def start_remote(self, preload_images):
         return
 
-    def deploy_metallb_azure(self):
+    def deploy_metallb_remote(self):
         return
 
-    def stop_azure(self):
+    def stop_remote(self):
         return
 
-    def display_confirmation_azure(self):
+    def display_confirmation_remote(self):
         return

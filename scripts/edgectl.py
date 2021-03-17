@@ -85,7 +85,7 @@ if __name__ == "__main__":
                         linesep +
                         "local_windows" +
                         linesep +
-                        "azure")
+                        "remote")
     parser.add_argument("--filter-environment", action="store",
                         default="", help="Specify the different environments. Possibles Options are: " +
                         linesep +

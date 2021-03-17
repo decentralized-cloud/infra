@@ -21,7 +21,7 @@ class EdgeCloudHelper:
         env_to_func_mapper = {
             "local_kind": self.deploy_config_local_kind_windows,
             "local_windows": self.deploy_config_local_kind_windows,
-            "azure": self.deploy_config_azure
+            "remote": self.deploy_config_remote
         }
 
         if not self.env in env_to_func_mapper:
@@ -33,8 +33,8 @@ class EdgeCloudHelper:
     def deploy_config_local_kind_windows(self):
         self.deploy_config_env("local")
 
-    def deploy_config_azure(self):
-        self.deploy_config_env("azure")
+    def deploy_config_remote(self):
+        self.deploy_config_env("remote")
 
     def deploy_config_env(self, env):
         environments = self.config_helper.get_environments()

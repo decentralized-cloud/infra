@@ -18,8 +18,7 @@ class CertManagerHelper:
             "helm upgrade --install cert-manager jetstack/cert-manager --namespace cert-manager --version v1.1.0 --set installCRDs=true --wait")
 
         if self.env == "local_kind" or self.env == 'local_windows':
-            certificates_directory = path.join(
-                path.dirname(__file__), "..", "certificates")
+            certificates_directory = self.config_helper.get_certificates_directory()
 
             self.system_helper.execute(
                 "kubectl create -n istio-system secret tls ca-key-pair --key=\"{keypair_file}\" --cert=\"{certificate_file}\"".format(

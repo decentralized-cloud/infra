@@ -11,8 +11,8 @@ class ConfigHelper:
     config_directory_path = path.join(
         path.dirname(__file__), "..", "config")
 
-    docker_directory_path = path.join(
-        path.dirname(__file__), "..", "docker")
+    certificates_directory_path = path.join(
+        path.dirname(__file__), "..", "certificates")
 
     def get_root_directory(self):
         return self.root_directory_path
@@ -20,8 +20,8 @@ class ConfigHelper:
     def get_config_root_directory(self):
         return self.config_directory_path
 
-    def get_docker_directory(self):
-        return self.docker_directory_path
+    def get_certificates_directory(self):
+        return self.certificates_directory_path
 
     def get_required_docker_images(self):
         with open(path.join(

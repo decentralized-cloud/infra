@@ -10,12 +10,17 @@ class EdgeCloudHelper:
 
     env = ""
     filterEnvironment = ""
+    services = {}
+    environments = {}
+    jwksURL = "https://edgecloud.au.auth0.com/.well-known/jwks.json"
     config_helper = ConfigHelper()
     system_helper = SystemHelper()
 
     def __init__(self, env, filterEnvironment):
         self.env = env.lower()
         self.filterEnvironment = filterEnvironment.lower()
+        self.services = self.config_helper.get_services()
+        self.environments = self.config_helper.get_environments()
 
     def deploy_config(self):
         env_to_func_mapper = {
@@ -30,6 +35,38 @@ class EdgeCloudHelper:
 
         env_to_func_mapper.get(self.env)()
 
+    def deploy_services(self, services):
+        if "user" in services:
+            self.deploy_helm_services('user')
+
+        if "project" in services:
+            self.deploy_helm_services('project')
+
+        if "edge-cluster" in services:
+            self.deploy_helm_services('edge-cluster')
+
+        if "api-gateway" in services:
+            self.deploy_helm_services('api-gateway')
+
+        if "console" in services:
+            self.deploy_console()
+
+    def remove_services(self, services):
+        if "user" in services:
+            self.remove_helm_services('user')
+
+        if "project" in services:
+            self.remove_helm_services('project')
+
+        if "edge-cluster" in services:
+            self.remove_helm_services('edge-cluster')
+
+        if "api-gateway" in services:
+            self.remove_helm_services('api-gateway')
+
+        if "console" in services:
+            self.remove_helm_services('console')
+
     def deploy_config_local_kind_windows(self):
         self.deploy_config_env("local")
 
@@ -37,9 +74,7 @@ class EdgeCloudHelper:
         self.deploy_config_env("remote")
 
     def deploy_config_env(self, env):
-        environments = self.config_helper.get_environments()
-
-        for environment in environments:
+        for environment in self.environments:
             if self.filterEnvironment != '':
                 if environment['name'] != self.filterEnvironment:
                     continue
@@ -92,3 +127,50 @@ class EdgeCloudHelper:
             tmp_config_file.close()
 
         return tmp_file_name
+
+    def deploy_helm_services(self, name):
+        setting = self.services[name]
+
+        self.system_helper.execute(
+            '''helm upgrade --install \\
+                {name} \\
+                decentralized-cloud/{name} \\
+                --namespace dev \\
+                --recreate-pods \\
+                --version {helm_chart_version} \\
+                --set image.tag={app_version} \\
+                --set image.pullPolicy={image_pull_policy} \\
+                --set pod.idp.jwksURL={jwksURL}'''.format(
+                name=name,
+                helm_chart_version=setting['helm_chart_version'],
+                app_version=setting['app_version'],
+                image_pull_policy=setting['image_pull_policy'],
+                jwksURL=self.jwksURL))
+
+    def deploy_console(self):
+        setting = self.services['console']
+
+        self.system_helper.execute(
+            '''helm upgrade --install \\
+                console \\
+                decentralized-cloud/console \\
+                --namespace dev \\
+                --recreate-pods \\
+                --version {helm_chart_version} \\
+                --set image.tag={app_version} \\
+                --set image.pullPolicy={image_pull_policy} \\
+                --set pod.apiGateway.url="https://api.edgecloud.com/graphql" \\
+                --set pod.idp.auth0Domain="edgecloud.au.auth0.com" \\
+                --set pod.idp.auth0ClientId="01ktnKPjGdkkerNdtDWQM7gCGuXGUBT9"'''.format(
+                helm_chart_version=setting['helm_chart_version'],
+                app_version=setting['app_version'],
+                image_pull_policy=setting['image_pull_policy']))
+
+    def remove_helm_services(self, name):
+        setting = self.services[name]
+
+        self.system_helper.execute(
+            '''helm uninstall \\
+                {name} \\
+                --namespace dev'''.format(
+                name=name))

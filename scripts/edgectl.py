@@ -15,6 +15,7 @@ from certificate_helper import CertificateHelper
 from docker_images_helper import DockerImageHelper
 from cluster_helper import ClusterHelper
 from istio_helper import IstioHelper
+from edge_cloud_helper import EdgeCloudHelper
 
 
 def main(args):
@@ -49,6 +50,14 @@ def main(args):
 
         if args.deploy_istio_addons:
             IstioHelper().deploy_addons()
+
+        edge_cloud_helper = EdgeCloudHelper(args.env, args.filter_environment)
+
+        if args.deploy_services:
+            edge_cloud_helper.deploy_services(args.services)
+
+        if args.remove_services:
+            edge_cloud_helper.remove_services(args.services)
 
     except Exception as exception:
         print(exception)
@@ -94,6 +103,8 @@ if __name__ == "__main__":
                         "test" +
                         linesep +
                         "prod")
+    parser.add_argument("--services", nargs="+",
+                        default=["user", "project", "edge-cluster", "api-gateway", "console"], help="List of service to deploy or remove")
     parser.add_argument(
         "--version",
         action="version",

@@ -125,6 +125,16 @@ install_telepresence()
     fi
 }
 
+install_python3()
+{
+    sudo apt-get install python3 -y
+}
+
+install_pip3()
+{
+    sudo apt-get install python3-pip -y
+}
+
 add_helm_repos()
 {
     # Add helm stable repo repo
@@ -155,7 +165,7 @@ fi
 sudo apt-get update -y
 
 # List of dependencies that are required by the edge-cloud infra for different use cases
-readonly dependencies="curl kubectl docker go kind helm istioctl jq telepresence"
+readonly dependencies="curl kubectl docker go kind helm istioctl jq telepresence python3 pip3"
 
 force=false
 
@@ -169,7 +179,7 @@ for dep in $dependencies; do
         install_"$dep"
         echo "Finished installing $dep"
     elif [ $force = true ]; then
-        if [[ "curl kubectl helm istioctl kind go telepresence" == *"$dep"* ]]; then
+        if [[ "curl kubectl helm istioctl kind go telepresence python3 pip3" == *"$dep"* ]]; then
             echo "Force installing $dep"
             install_"$dep"
             echo "Finished installing $dep"

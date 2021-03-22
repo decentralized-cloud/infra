@@ -33,5 +33,5 @@
   "docker.io/bitnami/metallb-controller:0.9.5-debian-10-r93",
   "docker.io/bitnami/metallb-speaker:0.9.5-debian-10-r103",
   "docker.io/bitnami/metallb-speaker:0.9.5-debian-10-r103",
-  "rancher/k3s:v1.20.0-k3s2"
+  "rancher/k3s:v1.20.4-k3s1"
 ]

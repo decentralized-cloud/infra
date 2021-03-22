@@ -140,12 +140,14 @@ class EdgeCloudHelper:
                 --version {helm_chart_version} \\
                 --set image.tag={app_version} \\
                 --set image.pullPolicy={image_pull_policy} \\
-                --set pod.idp.jwksURL={jwksURL}'''.format(
+                --set pod.idp.jwksURL={jwksURL} \\
+                --set pod.k3s.dockerImage={k3sDockerImage}'''.format(
                 name=name,
                 helm_chart_version=setting['helm_chart_version'],
                 app_version=setting['app_version'],
                 image_pull_policy=setting['image_pull_policy'],
-                jwksURL=self.jwksURL))
+                jwksURL=self.jwksURL,
+                k3sDockerImage='rancher/k3s:v1.20.4-k3s1'))
 
     def deploy_console(self):
         setting = self.services['console']
@@ -167,8 +169,6 @@ class EdgeCloudHelper:
                 image_pull_policy=setting['image_pull_policy']))
 
     def remove_helm_services(self, name):
-        setting = self.services[name]
-
         self.system_helper.execute(
             '''helm uninstall \\
                 {name} \\

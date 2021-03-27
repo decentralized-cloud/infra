@@ -18,7 +18,7 @@ class CertManagerHelper:
 
     def deploy(self):
         self.system_helper.execute(
-            "helm upgrade --install cert-manager jetstack/cert-manager --namespace cert-manager --version v1.1.0 --set installCRDs=true --wait")
+            "helm upgrade --install cert-manager jetstack/cert-manager --namespace cert-manager --version v1.2.0 --set installCRDs=true --wait")
 
         if self.env == "local_kind" or self.env == 'local_windows':
             certificates_directory = self.config_helper.get_certificates_directory()

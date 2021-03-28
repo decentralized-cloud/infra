@@ -56,4 +56,4 @@ class CertManagerHelper:
                 self.system_helper.execute(
                     "kubectl apply -n istio-system -f \"{config_file}\"".format(config_file=tmp_file_name))
 
-                remove(tmp_config_file)
+                remove(tmp_file_name)

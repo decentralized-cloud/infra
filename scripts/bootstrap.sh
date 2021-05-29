@@ -70,7 +70,7 @@ install_docker()
 
 install_go()
 {
-    curl -Lo go.tar.gz https://dl.google.com/go/go1.16.3.linux-amd64.tar.gz
+    curl -Lo go.tar.gz https://dl.google.com/go/go1.16.4.linux-amd64.tar.gz
     sudo rm -rf /usr/local/go
     sudo tar -C /usr/local -xzf go.tar.gz
     rm go.tar.gz
@@ -80,7 +80,7 @@ install_go()
 
 install_kind()
 {
-    curl -Lo ./kind https://github.com/kubernetes-sigs/kind/releases/download/v0.10.0/kind-linux-amd64
+    curl -Lo ./kind https://github.com/kubernetes-sigs/kind/releases/download/v0.11.1/kind-linux-amd64
     chmod +x ./kind
     sudo mv -f ./kind /usr/local/bin/ # Overwrite previous version
 }
@@ -95,9 +95,9 @@ install_helm()
 
 install_istioctl()
 {
-    curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.9.2  sh -
-    sudo mv -f istio-1.9.2/bin/istioctl /usr/local/bin/ # Overwrite previous version
-    rm -rf istio-1.9.2
+    curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.10.0  sh -
+    sudo mv -f istio-1.10.0/bin/istioctl /usr/local/bin/ # Overwrite previous version
+    rm -rf istio-1.10.0
 }
 
 install_jq()

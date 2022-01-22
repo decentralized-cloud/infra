@@ -70,7 +70,7 @@ install_docker()
 
 install_go()
 {
-    curl -Lo go.tar.gz https://dl.google.com/go/go1.17.4.linux-amd64.tar.gz
+    curl -Lo go.tar.gz https://dl.google.com/go/go1.17.6.linux-amd64.tar.gz
     sudo rm -rf /usr/local/go
     sudo tar -C /usr/local -xzf go.tar.gz
     rm go.tar.gz
@@ -95,9 +95,9 @@ install_helm()
 
 install_istioctl()
 {
-    curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.11.5  sh -
-    sudo mv -f istio-1.11.5/bin/istioctl /usr/local/bin/ # Overwrite previous version
-    rm -rf istio-1.11.5
+    curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.12.2  sh -
+    sudo mv -f istio-1.12.2/bin/istioctl /usr/local/bin/ # Overwrite previous version
+    rm -rf istio-1.12.2
 }
 
 install_jq()

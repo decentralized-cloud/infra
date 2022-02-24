@@ -70,7 +70,7 @@ install_docker()
 
 install_go()
 {
-    curl -Lo go.tar.gz https://dl.google.com/go/go1.17.6.linux-amd64.tar.gz
+    curl -Lo go.tar.gz https://dl.google.com/go/go1.17.7.linux-amd64.tar.gz
     sudo rm -rf /usr/local/go
     sudo tar -C /usr/local -xzf go.tar.gz
     rm go.tar.gz
